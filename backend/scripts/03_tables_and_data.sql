@@ -3,18 +3,12 @@ set search_path to public;
 create table restaurants
 (
     id          serial primary key,
-    name        varchar(256) not null
-                check( length(trim(name)) >= 5 ),
-
-    address     varchar(512) not null
-                check ( length(trim(address)) >= 5 ),
-    city        varchar(256) not null
-                check ( length(trim(city)) >= 3 ),
+    name        varchar(256) not null,
+    address     varchar(512) not null,
+    city        varchar(256) not null,
     phone       varchar(50)  not null,
-    description text             default null
-                check ( description is null or length(trim(description)) >= 10),
-    rating      double precision default null
-                check ( rating >= 0.0 and rating <= 5.0  ),
+    description text             default null,
+    rating      double precision default null,
     price_range int              default null,
     slot_duration int           not null default 30
 );
