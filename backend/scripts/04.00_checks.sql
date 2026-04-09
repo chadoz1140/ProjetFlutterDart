@@ -64,4 +64,30 @@ ALTER TABLE restaurants
 ADD CONSTRAINT check_slot_duration
 check ( slot_duration in (10, 15, 20, 30, 60) );
 
+/**************************************************************
+Contraintes de check table Réservation
+**************************************************************/
+
+-- check le statut d'une réservation
+ALTER TABLE reservations
+ADD CONSTRAINT check_status
+check(status in ('pending', 'confirmed', 'cancelled', 'completed'));
+
+-- check le nombre de convives
+ALTER TABLE reservations
+ADD CONSTRAINT check_number_of_guests
+check (number_of_guests > 0);
+
+-- check la longueur de text d'une spéciale réservation
+ALTER TABLE reservations
+ADD CONSTRAINT check_special_requests
+check(
+    special_requests is null
+    or length(trim(special_requests))>=10
+    );
+
+
+
+
+
 
