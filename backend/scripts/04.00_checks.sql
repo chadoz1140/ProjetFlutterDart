@@ -1,3 +1,28 @@
+/**************************************************************
+Contraintes de check table User
+**************************************************************/
+-- check email
+ALTER TABLE users
+ADD CONSTRAINT check_email
+check (regexp_match(email, '^[a-zA-Z0-9._%+-]+@epfc\.eu$') is not null);
+
+-- check password
+ALTER TABLE users
+ADD CONSTRAINT check_password
+check(regexp_match(password, '^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[,;.:!?/$%&@#]).{8,}$') is not null);
+
+--check full_name
+ALTER TABLE users
+ADD CONSTRAINT check_full_name
+check (length(trim(full_name)) >=3);
+
+insert into users values (20, 'test', 'test', 'te'); -- Test KO
+insert into users values (20, 'test@epfc.eu', 'Password1,', 'test'); -- Test OK
+
+/**************************************************************
+Contraintes de check table Restaurant
+**************************************************************/
+
 --le nom contient au moins 5 caractères
 ALTER TABLE restaurants
 ADD CONSTRAINT check_name
@@ -38,3 +63,5 @@ check ( price_range is null or ( price_range >= 1 and price_range <= 4) );
 ALTER TABLE restaurants
 ADD CONSTRAINT check_slot_duration
 check ( slot_duration in (10, 15, 20, 30, 60) );
+
+

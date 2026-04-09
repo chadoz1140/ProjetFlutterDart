@@ -23,11 +23,9 @@ drop table if exists users;
 create table users
 (
     id        serial primary key,
-    email     varchar(256) not null
-                check (regexp_match(email, '^[a-zA-Z0-9._%+-]+@epfc\.eu$') is not null),
+    email     varchar(256) not null,
     password  varchar(512) not null,
-    full_name varchar(256) not null
-                check(length(trim(full_name)) >= 3),
+    full_name varchar(256) not null,
     role      role_type    not null default 'client',
     phone     varchar(50)  default null
 );
@@ -68,31 +66,6 @@ end;
 $$ language plpgsql security definer;
 
 /**************************************************************
- Trigger pour vérifier la validité du mot de passe
- **************************************************************/
-
-create or replace function check_password() returns trigger as
-$$
-begin
-    if not (new.password ~'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[,;.:!?/$%&@#]).{8,}$') then
-        raise exception 'Password must be at least 8 characters long and contain at least one digit, one uppercase letter, one lowercase letter and one special character.';
-    end if;
-    return new;
-end;
-$$language plpgsql;
-
-drop trigger if exists check_password_trigger on users;
-
-create trigger check_password_trigger
-    before insert or update
-    on users
-    for each row
-execute function check_password();
-
-update users
-set password = 'Password1,';
-
-/**************************************************************
  Trigger pour encrypter automatiquement le mot de passe
  **************************************************************/
 
@@ -127,31 +100,6 @@ execute procedure auth.encrypt_pass();
 
  On doit le faire ici pour que le trigger qui hache les mots de passe soit dispo.
  */
-
-/**************************************************************
-Trigger qui empêche la modification du rôle d'un utilisateur
-**************************************************************/
-create or replace function users_role_immutable()
-    returns trigger as
-$$
-begin
-if new.role is distinct from old.role then
-    raise exception 'User role cannot be changed';
-end if;
-return new;
-end;
-$$ language plpgsql;
-
-drop trigger if exists users_role_immutable_trigger on users;
-
-create trigger users_role_immutable_trigger
-    before update on users
-    for each row
-execute function users_role_immutable();
-
--- Test
-update users set role = 'manager' where id = 3;
-select * from users;
 
 select *
 from reset_users();
@@ -195,66 +143,6 @@ end;
 $$ language plpgsql security definer;
 
 grant execute on function login to anon;
-
-
-/**************************************************************
- Fonctions qui permet de vérifier si un email est disponible
- **************************************************************/
-create or replace function check_email_available(email text, user_id int default 0) returns boolean as
-$$
-begin
-    if user_id > 0 then
-        return exists(select 1 from users u where u.email = check_email_available.email and u.id = user_id);
-    else
-        return not exists(select 1 from users u where u.email = check_email_available.email);
-    end if;
-end;
-$$ language plpgsql security definer;
-
-grant execute on function check_email_available to anon;
-
-select * from check_email_available('xapigeolet@epfc.eu');
-select * from check_email_available('test@epfc.eu');
-
-
-/**************************************************************
- Fonctions qui permet de vérifier si un full_name est disponible
- **************************************************************/
-create or replace function check_full_name_available(full_name text, user_id int default 0) returns boolean as
-$$
-declare
-    existing_name text;
-begin
-    if user_id > 0 then
-        return exists(select 1 from users u where u.full_name = check_full_name_available.full_name and u.id = user_id);
-    end if;
-
-    select u.full_name into existing_name
-    from users u
-    where lower(u.full_name) = lower(check_full_name_available.full_name)
-    limit 1;
-
-    return existing_name is null;
-end;
-
-$$ language plpgsql security definer;
-
-grant execute on function check_full_name_available to anon;
-
-
-/**************************************************************
-***********    Tests ******
-**************************************************************/
-
-select * from check_full_name_available('BORIS');
-select * from check_full_name_available('test');
-
-insert into users values (15,'test@epfc.eu', 'Password1,', 'test', 'manager');
-insert into users values (9,'test@epfc.eu', 'Password1,', 'test', 'manager');
-insert into users values (13,'test1@epfc.eu', 'Password1,', 'test1', 'client');
-
-update users set role = 'manager' where id = 4;
-select * from users;
 
 /**************************************************************
  Fonctions utilitaires vàv de la sécurité
