@@ -86,8 +86,40 @@ check(
     or length(trim(special_requests))>=10
     );
 
+/**************************************************************
+Contraintes de check pour table
+**************************************************************/
+
+--combinaison numéro de table et restaurant unique
+ALTER TABLE tables
+ADD CONSTRAINT unique_table_number
+UNIQUE (table_number, restaurant);
 
 
+--numéro de table positif
+ALTER TABLE tables
+ADD CONSTRAINT check_positif_and_unique
+check (table_number > 0);
 
+--capacité positif
+ALTER TABLE tables
+ADD CONSTRAINT check_positif_capacity
+check (capacity > 0);
 
+/**************************************************************
+Contraintes de check pour services table
+**************************************************************/
+--jour de la semaine entre 1 et 7 inclus
+ALTER TABLE services
+ADD CONSTRAINT check_day_of_week
+check (day_of_week >= 1 AND day_of_week <= 7);
 
+--heure de fin > heure de début
+ALTER TABLE services
+ADD CONSTRAINT check_end_time_and_start_time
+check ((extract(EPOCH FROM end_time) - extract(EPOCH FROM start_time)) > 60);
+
+--combinaison restaurant, day of week, start time et end time unique
+ALTER TABLE services
+ADD CONSTRAINT unique_service
+UNIQUE (restaurant, day_of_week, start_time, end_time);
