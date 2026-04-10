@@ -9,6 +9,8 @@ begin
 end;
 $$ language plpgsql;
 
+drop trigger if exists users_role_immutable_trigger on users;
+
 create trigger users_role_immutable_trigger
 before update of role
 on users
