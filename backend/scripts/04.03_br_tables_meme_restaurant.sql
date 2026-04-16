@@ -23,7 +23,7 @@ begin
     end if;
     return new;
 end;
-$$language plpgsql security definer;
+$$language plpgsql;
 
 drop trigger if exists tables_meme_restaurant_trigger on reservation_tables;
 
