@@ -65,8 +65,3 @@ check (day_of_week >= 1 AND day_of_week <= 7);
 ALTER TABLE services
 ADD CONSTRAINT check_end_time_and_start_time
 check ((extract(EPOCH FROM end_time) - extract(EPOCH FROM start_time)) > 60);
-
---combinaison restaurant, day of week, start time et end time unique
-ALTER TABLE services
-ADD CONSTRAINT unique_service
-UNIQUE (restaurant, day_of_week, start_time, end_time);
