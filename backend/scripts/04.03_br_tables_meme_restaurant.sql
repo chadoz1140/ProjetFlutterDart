@@ -1,3 +1,4 @@
+drop function if exists tables_meme_restaurant();
 create or replace function tables_meme_restaurant()
     returns trigger as
 $$
