@@ -1,5 +1,5 @@
-drop function if exists tables_meme_restaurant();
-create or replace function tables_meme_restaurant()
+drop function if exists check_tables_same_restaurant();
+create or replace function check_tables_same_restaurant()
     returns trigger as
 $$
     declare reservation_restaurant_id int;
@@ -20,19 +20,19 @@ begin
     into table_restaurant_id;
 
     if(reservation_restaurant_id <> table_restaurant_id) then
-        raise exception 'la table associée n''appartient pas à la restaurant de la réservation!';
+        raise exception 'The table associated does not belong to the restaurant of the reservation!';
     end if;
     return new;
 end;
 $$language plpgsql;
 
-drop trigger if exists tables_meme_restaurant_trigger on reservation_tables;
+drop trigger if exists check_tables_same_restaurant_trigger on reservation_tables;
 
-create or replace trigger tables_meme_restaurant_trigger
+create or replace trigger check_tables_same_restaurant_trigger
 before insert or update
 on reservation_tables
 for each row
-execute function tables_meme_restaurant();
+execute function check_tables_same_restaurant();
 
 /**************************************************************
 ***********    Tests ******
