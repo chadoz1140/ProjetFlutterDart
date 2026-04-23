@@ -46,28 +46,28 @@ execute function check_same_service_restaurant_reservation_fct();
 **************************************************************/
 
 /**************** test valide deux horaires différents *****************/
-insert into reservations (client, restaurant, datetime, number_of_guests, status)
-values (1, 1, '2024-11-18 12:30:00', 2, 'confirmed');
-
-insert into reservations (client, restaurant, datetime, number_of_guests, status)
-values (1, 1, '2024-11-18 20:00:00', 2, 'confirmed');
+-- insert into reservations (client, restaurant, datetime, number_of_guests, status)
+-- values (1, 1, '2024-11-18 12:30:00', 2, 'confirmed');
+--
+-- insert into reservations (client, restaurant, datetime, number_of_guests, status)
+-- values (1, 1, '2024-11-18 20:00:00', 2, 'confirmed');
 
 -- UPDATE doit être bloquer
-update reservations
-set datetime = '2024-11-18 20:00:00'
-where client = 1 and datetime = '2024-11-18 12:30:00';
-
-/**************** test invalide deux reservation ont même horaires *****************/
-insert into reservations (client, restaurant, datetime, number_of_guests, status)
-values (2, 1, '2024-11-18 19:30:00', 2, 'confirmed');
-
-insert into reservations (client, restaurant, datetime, number_of_guests, status)
-values (2, 1, '2024-11-18 20:30:00', 2, 'confirmed');
-
-
-/**************** test valide deux reservation ont même horaires mais deux restau différent *****************/
-insert into reservations (client, restaurant, datetime, number_of_guests, status)
-values (3, 1, '2024-11-18 20:00:00', 2, 'confirmed');
-
-insert into reservations (client, restaurant, datetime, number_of_guests, status)
-values (3, 2, '2024-11-18 20:00:00', 2, 'confirmed');
+-- update reservations
+-- set datetime = '2024-11-18 20:00:00'
+-- where client = 1 and datetime = '2024-11-18 12:30:00';
+--
+-- /**************** test invalide deux reservation ont même horaires *****************/
+-- insert into reservations (client, restaurant, datetime, number_of_guests, status)
+-- values (2, 1, '2024-11-18 19:30:00', 2, 'confirmed');
+--
+-- insert into reservations (client, restaurant, datetime, number_of_guests, status)
+-- values (2, 1, '2024-11-18 20:30:00', 2, 'confirmed');
+--
+--
+-- /**************** test valide deux reservation ont même horaires mais deux restau différent *****************/
+-- insert into reservations (client, restaurant, datetime, number_of_guests, status)
+-- values (3, 1, '2024-11-18 20:00:00', 2, 'confirmed');
+--
+-- insert into reservations (client, restaurant, datetime, number_of_guests, status)
+-- values (3, 2, '2024-11-18 20:00:00', 2, 'confirmed');

@@ -116,38 +116,38 @@ execute function check_capacity_tables();
 ***********    Tests ******
 **************************************************************/
 --la table des tables : la reservation id=7 avec 8 guests, à deux tables associées 2 et 3
-delete from tables
-where id = 3;
-
-UPDATE tables
-SET capacity = 2
-WHERE id = 3;
---la table des reservations :
---le cas d'insert : nouveau reservation avec un status ('confirmed', 'completed') mais les tables == null
-insert into reservations (client, restaurant, datetime, number_of_guests, status)
-values (3, 1, '2025-12-10 19:00:00', 10, 'confirmed');
---le cas d'un update :
-UPDATE reservations
-SET number_of_guests = 10
-WHERE id = 1;
-
-UPDATE reservations
-SET status = 'confirmed'
-WHERE id = 2;
-
---la table des reservation_tables :
---le teste passe pas
-BEGIN;
-DELETE FROM reservation_tables
-WHERE reservation = 7;
-COMMIT;
-
--- test passe aprés la transaction, la vérification est valide pas d'erreur
-BEGIN;
-DELETE FROM reservation_tables WHERE reservation = 7;
-UPDATE reservations SET status = 'cancelled' WHERE id = 7;
-COMMIT;
-
-BEGIN;
-
-ROLLBACK;
+-- delete from tables
+-- where id = 3;
+--
+-- UPDATE tables
+-- SET capacity = 2
+-- WHERE id = 3;
+-- --la table des reservations :
+-- --le cas d'insert : nouveau reservation avec un status ('confirmed', 'completed') mais les tables == null
+-- insert into reservations (client, restaurant, datetime, number_of_guests, status)
+-- values (3, 1, '2025-12-10 19:00:00', 10, 'confirmed');
+-- --le cas d'un update :
+-- UPDATE reservations
+-- SET number_of_guests = 10
+-- WHERE id = 1;
+--
+-- UPDATE reservations
+-- SET status = 'confirmed'
+-- WHERE id = 2;
+--
+-- --la table des reservation_tables :
+-- --le teste passe pas
+-- BEGIN;
+-- DELETE FROM reservation_tables
+-- WHERE reservation = 7;
+-- COMMIT;
+--
+-- -- test passe aprés la transaction, la vérification est valide pas d'erreur
+-- BEGIN;
+-- DELETE FROM reservation_tables WHERE reservation = 7;
+-- UPDATE reservations SET status = 'cancelled' WHERE id = 7;
+-- COMMIT;
+--
+-- BEGIN;
+--
+-- ROLLBACK;

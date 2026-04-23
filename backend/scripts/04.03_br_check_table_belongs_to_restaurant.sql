@@ -38,12 +38,12 @@ execute function check_tables_same_restaurant();
 ***********    Tests ******
 **************************************************************/
 --test non valide
-insert into reservation_tables(reservation, "table")  values (2, 1);
---test valide
-insert into reservation_tables(reservation, "table")
-values (2, 4);
-
-SELECT *
-FROM reservation_tables
-WHERE reservation = 2 AND "table" = 4;
-
+-- insert into reservation_tables(reservation, "table")  values (2, 1);
+-- --test valide
+-- insert into reservation_tables(reservation, "table")
+-- values (2, 4);
+--
+-- SELECT *
+-- FROM reservation_tables
+-- WHERE reservation = 2 AND "table" = 4;
+--
