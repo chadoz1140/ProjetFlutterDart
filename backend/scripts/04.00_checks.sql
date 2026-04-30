@@ -1,11 +1,6 @@
 /**************************************************************
 Contraintes de check table User
 **************************************************************/
--- check email
-ALTER TABLE users
-ADD CONSTRAINT check_email
-check (regexp_match(email, '^[a-zA-Z0-9._%+-]+@epfc\.eu$') is not null);
-
 -- check password
 ALTER TABLE users
 ADD CONSTRAINT check_password
@@ -15,9 +10,6 @@ check(regexp_match(password, '^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[,;.:!?/$%&@#]
 ALTER TABLE users
 ADD CONSTRAINT check_full_name
 check (length(trim(full_name)) >=3);
-
-insert into users values (20, 'test', 'test', 'te'); -- Test KO
-insert into users values (20, 'test@epfc.eu', 'Password1,', 'test'); -- Test OK
 
 /**************************************************************
 Contraintes de check table Restaurant

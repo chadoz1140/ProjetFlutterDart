@@ -16,7 +16,9 @@ begin
 
     -- Aucune modification par rapport aux transitions cancelled et completed
     if old.status in ('cancelled', 'completed') then
-       raise exception 'Cannot modify a completed or cancelled reservation.';
+        if new.status <> old.status then
+            raise exception 'Cannot modify a completed or cancelled reservation.';
+        end if;
     end if;
 
     -- Aucun changement

@@ -5,7 +5,10 @@ create or replace function users_role_immutable()
     returns trigger as
 $$
 begin
-    raise exception 'User role cannot be changed';
+    if new.role is distinct from old.role then
+        raise exception 'User role cannot be changed';
+    end if;
+    return new;
 end;
 $$ language plpgsql;
 
@@ -17,8 +20,4 @@ on users
 for each row
 execute function users_role_immutable();
 
-select * from users;
-
-update users set role= 'manager' where id = 1;
-update users set role= 'client' where id = 2;
 

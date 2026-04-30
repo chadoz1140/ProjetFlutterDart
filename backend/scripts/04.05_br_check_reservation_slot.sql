@@ -33,9 +33,3 @@ create trigger check_reservation_slot_trigger
     before insert or update on reservations
     for each row
     execute function check_reservation_slot();
-
-
-select * from services;
-select * from reservations;
-
-insert into reservations values(35, 3, 1, '2024-11-15 19:30:00', 2, 'pending', 'test test test')
