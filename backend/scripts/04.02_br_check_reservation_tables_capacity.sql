@@ -26,7 +26,7 @@ begin
             having sum(t.capacity) < nb_guest_old_reservation
                 or sum(t.capacity) is null
         ) then
-            raise exception 'The capacity of the tables for this reservation is insufficient.';
+            raise exception '1_The capacity of the tables for this reservation is insufficient.';
         end if;
 
     end if;
@@ -34,7 +34,7 @@ begin
     return null;
 end;
 $$ language plpgsql;
-
+--
 drop trigger if exists check_reservation_tables_capacity_trigger on reservation_tables;
 create constraint trigger check_reservation_tables_capacity_trigger
     after delete on reservation_tables
@@ -57,7 +57,7 @@ $$
             where rt.reservation = new.id
             having sum(t.capacity) <  new.number_of_guests or sum(t.capacity) is null
         ) then
-            raise exception 'The capacity of the tables for this reservation is insufficient.';
+            raise exception '2_The capacity of the tables for this reservation is insufficient.';
         end if;
         return new;
     end;
@@ -95,18 +95,18 @@ $$
         ) then
             raise exception 'Insufficient table capacity for this reservation.';
         end if;
-        return null;
---         if tg_op in ('UPDATE') then
---             return new;
---         elsif tg_op in ('DELETE') then
---             return old;
---         end if;
+--         return null;
+        if tg_op in ('UPDATE') then
+            return new;
+        elsif tg_op in ('DELETE') then
+            return old;
+        end if;
     end;
 $$language plpgsql;
 
 drop trigger if exists check_capacity_tables_trigger on tables;
 create or replace trigger check_capacity_tables_trigger
-after UPDATE
+after UPDATE OR DELETE
 on tables
 for each row
 execute function check_capacity_tables();
@@ -115,10 +115,10 @@ execute function check_capacity_tables();
 /**************************************************************
 ***********    Tests ******
 **************************************************************/
---la table des tables : la reservation id=7 avec 8 guests, à deux tables associées 2 et 3
+-- la table des tables : la reservation id=7 avec 8 guests, à deux tables associées 2 et 3
 -- delete from tables
 -- where id = 3;
---
+-- -- -- --
 -- UPDATE tables
 -- SET capacity = 2
 -- WHERE id = 3;
