@@ -50,7 +50,7 @@ CREATE OR REPLACE FUNCTION change_statut_delete_reservation_tables()
             then
                 UPDATE reservations
                 SET status = 'cancelled'
-                WHERE id = OLD.reservation;
+                WHERE id = old.reservation;
             end if;
             return old;
         end;

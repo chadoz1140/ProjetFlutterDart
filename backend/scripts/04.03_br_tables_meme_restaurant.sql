@@ -34,16 +34,16 @@ on reservation_tables
 for each row
 execute function tables_meme_restaurant();
 
-/**************************************************************
-***********    Tests ******
-**************************************************************/
---test non valide
-insert into reservation_tables(reservation, "table")  values (2, 1);
---test valide
-insert into reservation_tables(reservation, "table")
-values (2, 4);
-
-SELECT *
-FROM reservation_tables
-WHERE reservation = 2 AND "table" = 4;
+-- /**************************************************************
+-- ***********    Tests ******
+-- **************************************************************/
+-- --test non valide
+-- insert into reservation_tables(reservation, "table")  values (2, 1);
+-- --test valide
+-- insert into reservation_tables(reservation, "table")
+-- values (2, 4);
+--
+-- SELECT *
+-- FROM reservation_tables
+-- WHERE reservation = 2 AND "table" = 4;
 

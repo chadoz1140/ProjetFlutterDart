@@ -35,6 +35,7 @@ CREATE OR REPLACE FUNCTION verify_update_user_role()
                     raise exception 'client with reservation(s) can''t be manager';
                 end if;
             end if;
+            return new;
         end;
     $$language plpgsql;
 

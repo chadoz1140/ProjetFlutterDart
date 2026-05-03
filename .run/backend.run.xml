@@ -3,6 +3,13 @@
     <script-file value="$PROJECT_DIR$/backend/scripts/01_init.sql" />
     <script-file value="$PROJECT_DIR$/backend/scripts/02_security.sql" />
     <script-file value="$PROJECT_DIR$/backend/scripts/03_tables_and_data.sql" />
+    <script-file value="$PROJECT_DIR$/backend/scripts/04.00_checks.sql" />
+    <script-file value="$PROJECT_DIR$/backend/scripts/04.01_br_reservation_for_client.sql" />
+    <script-file value="$PROJECT_DIR$/backend/scripts/04.02_br_check_reservation_tables_capacity.sql" />
+    <script-file value="$PROJECT_DIR$/backend/scripts/04.03_br_tables_meme_restaurant.sql" />
+    <script-file value="$PROJECT_DIR$/backend/scripts/04.07_br_service_time_overlap.sql" />
+    <script-file value="$PROJECT_DIR$/backend/scripts/04.10_br_restaurant_managers.sql" />
+    <script-file value="$PROJECT_DIR$/backend/scripts/04.12_br_reservation_cancelled_or_update.sql" />
     <script-mode>FILE</script-mode>
     <data-source id="6d275bb5-c69c-4f95-bc29-f6a29631655b" namespace="database/&quot;prbd-2526-c01&quot;" />
     <method v="2" />
