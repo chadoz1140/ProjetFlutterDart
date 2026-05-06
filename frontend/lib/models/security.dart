@@ -66,7 +66,10 @@ class Security {
   }
 
   static Future<void> resetDatabase() async {
-    final response = await ApiClient.post('reset_database');
+    final response = await ApiClient.post(
+        'reset_database',
+         anonymous: true,
+    );
     if (response.statusCode != 204) {
       throw Exception('Failed to reset database');
     }

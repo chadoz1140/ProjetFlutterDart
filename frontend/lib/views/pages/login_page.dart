@@ -17,11 +17,11 @@ class LoginPage extends ConsumerStatefulWidget {
 class _LoginPageState extends ConsumerState<LoginPage>{
   static const String _debugPassword = 'Password1,';
 
-  final _emailController = ValidatingTextEditingController(
+  late var _emailController = ValidatingTextEditingController(
     validator:(value)=> User.validateEmail(value, isLogin: true),
 
   );
-  final _passwordController = ValidatingTextEditingController(
+  late var _passwordController = ValidatingTextEditingController(
     validator: User.validatePasswordLogin,
   );
 
@@ -45,7 +45,7 @@ class _LoginPageState extends ConsumerState<LoginPage>{
           IconButton(
             icon: const Icon(Icons.refresh),
             tooltip: 'Rafraîchir les données',
-            onPressed: (){},
+            onPressed: ()=> _resetForm(),
           ),
         ],
         elevation: 2,
@@ -347,6 +347,23 @@ class _LoginPageState extends ConsumerState<LoginPage>{
         ),
       );
     }
+  }
+
+  void _resetForm() {
+    _emailController.dispose();
+    _passwordController.dispose();
+
+
+    _emailController = ValidatingTextEditingController(
+        validator: User.validateEmail,
+        asyncValidator: User.validateEmailUnicity);
+    _emailController.onAfterValidated = () => setState(() {});
+
+    _passwordController = ValidatingTextEditingController(
+        validator: User.validatePasswordSignup);
+    _passwordController.onAfterValidated = () => setState(() {});
+
+    setState(() {});
   }
 
 }

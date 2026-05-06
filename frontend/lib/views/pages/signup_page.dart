@@ -75,7 +75,7 @@ class _SignupPageState extends ConsumerState<SignupPage> {
           IconButton(
             icon: const Icon(Icons.refresh),
             tooltip: 'Rafraîchir les données',
-            onPressed: () {},
+            onPressed: () => _resetForm(),
           ),
         ],
         elevation: 2,
@@ -245,4 +245,37 @@ class _SignupPageState extends ConsumerState<SignupPage> {
           _passwordController.isValid == true &&
           _confirmPasswordController.isValid == true &&
           _phoneController.isValid == true;
+
+  void _resetForm() {
+    _emailController.dispose();
+    _fullNameController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    _phoneController.dispose();
+
+    _emailController = ValidatingTextEditingController(
+        validator: User.validateEmail,
+        asyncValidator: User.validateEmailUnicity);
+    _emailController.onAfterValidated = () => setState(() {});
+
+    _fullNameController = ValidatingTextEditingController(
+        validator: User.validateFullName,
+        asyncValidator: User.validateFullNameUnicity);
+    _fullNameController.onAfterValidated = () => setState(() {});
+
+    _passwordController = ValidatingTextEditingController(
+        validator: User.validatePasswordSignup);
+    _passwordController.onAfterValidated = () => setState(() {});
+
+    _confirmPasswordController = ValidatingTextEditingController(
+        validator: (value) => User.validateConfirmPassword(value, _passwordController.text)
+    );
+    _confirmPasswordController.onAfterValidated = () => setState(() {});
+
+    _phoneController = ValidatingTextEditingController(
+        validator: User.validatePhone);
+    _phoneController.onAfterValidated = () => setState(() {});
+
+    setState(() {});
+  }
 }
