@@ -31,10 +31,14 @@ class User {
     );
   }
 
-  static String? validateEmail(String? email) {
+  static String? validateEmail(String? email, {bool isLogin = false}) {
     if (email == null || email.isEmpty) {
       return 'requis';
-    } else if (!RegExp(r'^[A-Za-z0-9+_.-]+@epfc\.eu$').hasMatch(email)) {
+    }
+
+    if (isLogin) return null;
+
+    if (!RegExp(r'^[A-Za-z0-9+_.-]+@epfc\.eu$').hasMatch(email)) {
       return 'Veuillez entrer une addresse email valide.';
     }
     return null;
@@ -60,7 +64,15 @@ class User {
     return res ? null : 'Ce nom est déjà utilisé.';
   }
 
-  static String? validatePassword(String? value) {
+
+  static String? validatePasswordLogin(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'requis';
+    }
+    return null;
+  }
+
+  static String? validatePasswordSignup(String? value) {
     if (value == null || value.isEmpty) {
       return 'requis';
     }
@@ -68,7 +80,7 @@ class User {
   }
 
   static String? validateConfirmPassword(String? value, String? password) {
-    String? passwordError = validatePassword(value);
+    String? passwordError = validatePasswordLogin(value);
     if (passwordError != null) return passwordError;
     if (value != password) return 'Les deux mots de passe doivent être identiques.';
     return null;

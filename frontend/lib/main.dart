@@ -6,8 +6,13 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:prbd_2526_c01/core/tools/Params.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting('fr_FR', null);
   await Params.init();
-  await initializeDateFormatting();
-  runApp(ProviderScope(child: MyApp()));
+  runApp(
+    ProviderScope(
+      child: MyApp(),
+    ),
+  );
 }
 

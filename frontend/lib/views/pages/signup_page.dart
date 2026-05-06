@@ -35,7 +35,7 @@ class _SignupPageState extends ConsumerState<SignupPage> {
     _fullNameController.onAfterValidated = () => setState(() {});
 
     _passwordController = ValidatingTextEditingController(
-      validator: User.validatePassword,);
+      validator: User.validatePasswordSignup);
     _passwordController.onAfterValidated = () => setState(() {});
 
     _confirmPasswordController = ValidatingTextEditingController(
@@ -131,8 +131,8 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                   onFieldSubmitted: (_) => _submitForm(context),
                   decoration: InputDecoration(
                     labelText: 'Nom complet',
-                    border: const OutlineInputBorder(),
-                    prefixIcon: const Icon(Icons.person),
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.person),
                     errorText: _fullNameController.errorText,
                   ),
                 ),
@@ -143,8 +143,8 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                   onFieldSubmitted: (_) => _submitForm(context),
                   decoration: InputDecoration(
                     labelText: 'Email',
-                    border: const OutlineInputBorder(),
-                    prefixIcon: const Icon(Icons.email),
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.email),
                     errorText: _emailController.errorText,
                   ),
                   keyboardType: TextInputType.emailAddress,
@@ -156,8 +156,8 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                   onFieldSubmitted: (_) => _submitForm(context),
                   decoration: InputDecoration(
                     labelText: 'Mot de passe',
-                    border: const OutlineInputBorder(),
-                    prefixIcon: const Icon(Icons.lock),
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.lock),
                     errorText: _passwordController.errorText,
                   ),
                   obscureText: true,
@@ -169,8 +169,8 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                   onFieldSubmitted: (_) => _submitForm(context),
                   decoration: InputDecoration(
                     labelText: 'Confirmer le mot de passe',
-                    border: const OutlineInputBorder(),
-                    prefixIcon: const Icon(Icons.lock_outline),
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.lock_outline),
                     errorText: _confirmPasswordController.errorText,
                   ),
                   obscureText: true,
@@ -182,8 +182,8 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                   onFieldSubmitted: (_) => _submitForm(context),
                   decoration: InputDecoration(
                     labelText: 'Téléphone (optionnel)',
-                    border: const OutlineInputBorder(),
-                    prefixIcon: const Icon(Icons.phone),
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.phone),
                     errorText: _phoneController.errorText,
                   ),
                   keyboardType: TextInputType.phone,
@@ -225,7 +225,7 @@ class _SignupPageState extends ConsumerState<SignupPage> {
         phone: _phoneController.text
     );
     if (context.mounted) {
-      Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+      Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
     }
   }
 

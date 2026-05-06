@@ -33,8 +33,10 @@ check ( length(trim(city)) >= 3 );
 -- numéro de téléphone Belge valide
 ALTER TABLE restaurants
 ADD CONSTRAINT check_phone
-CHECK (regexp_match(phone, '^(\+32\s?|0)[1-9]\d{0,2}(\s?\d{2}){3}$') IS NOT NULL)
-NOT VALID;
+check (
+    regexp_replace(phone, '[[:space:]]+', '', 'g')
+        ~ '^(\+32[1-9][0-9]{7,8}|0[1-9][0-9]{7,8})$'
+);
 
 --la description contient au moins 10 caract si fournie
 ALTER TABLE restaurants
