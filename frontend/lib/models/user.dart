@@ -87,4 +87,13 @@ class User {
     }
     return null;
   }
+
+  static String? validatePhone(String? phone) {
+    if (phone != null && phone.isNotEmpty) {
+      if (!RegExp(r'^(\+32\s?|0)[1-9]\d{0,2}(\s?\d{2}){3}$').hasMatch(phone)) {
+        return 'Veuillez entrer un numéro de téléphone valide.';
+      }
+    }
+    return null;
+  }
 }

@@ -43,9 +43,9 @@ class _SignupPageState extends ConsumerState<SignupPage> {
     );
     _confirmPasswordController.onAfterValidated = () => setState(() {});
 
-    _phoneController = ValidatingTextEditingController();
+    _phoneController = ValidatingTextEditingController(
+        validator: User.validatePhone);
     _phoneController.onAfterValidated = () =>setState(() {});
-
   }
 
   @override
@@ -180,10 +180,11 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                   autovalidateMode: AutovalidateMode.onUserInteraction,
                   controller: _phoneController,
                   onFieldSubmitted: (_) => _submitForm(context),
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: 'Téléphone (optionnel)',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.phone),
+                    border: const OutlineInputBorder(),
+                    prefixIcon: const Icon(Icons.phone),
+                    errorText: _phoneController.errorText,
                   ),
                   keyboardType: TextInputType.phone,
                 ),
