@@ -6,12 +6,12 @@ import 'package:prbd_2526_c01/models/security.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 
 final securityProvider = AsyncNotifierProvider<SecurityNotifier, String?>(
-    () => SecurityNotifier(),
+      () => SecurityNotifier(),
 );
 
 class SecurityNotifier extends AsyncNotifier<String?> {
   @override
-  Future<String?> build() async {
+  FutureOr<String?> build() {
     state = AsyncData(Params.getValue('token'));
     return state.value;
   }
@@ -34,7 +34,7 @@ class SecurityNotifier extends AsyncNotifier<String?> {
     Params.clearValue('token');
     state = AsyncData(null);
   }
-  
+
   Future<void>resetDatabase() async {
     state = AsyncValue.loading();
     try {
@@ -62,6 +62,27 @@ class SecurityNotifier extends AsyncNotifier<String?> {
       return decodedToken['name'];
     }catch(e){
       return null;
+    }
+  }
+
+  Future<void> signup({
+    required String email,
+    required String fullName,
+    required String password,
+    String? phone,
+  }) async {
+    state = const AsyncValue.loading();
+    try {
+      await Security.signup(
+          email: email,
+          fullName: fullName,
+          password: password,
+          phone: phone,
+      );
+      await login(email, password);
+      state = AsyncValue.data(Params.getValue('token'));
+    } catch (e) {
+      state= AsyncValue.error("Signup failed", StackTrace.current);
     }
   }
 

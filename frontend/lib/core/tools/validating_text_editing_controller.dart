@@ -2,8 +2,6 @@ import 'package:async/async.dart';
 import 'package:flutter/material.dart';
 import 'package:prbd_2526_c01/core/tools/debounce.dart';
 
-import 'debounce.dart';
-
 /// Un contrôleur de texte qui étend [TextEditingController] avec des fonctionnalités
 /// de validation automatique.
 ///
@@ -75,8 +73,12 @@ class ValidatingTextEditingController extends TextEditingController {
   ///   en appelant setState().
   ///
   /// - [initialValue] : valeur initiale du texte dans le contrôleur.
-  ValidatingTextEditingController({this.validator, this.asyncValidator, this.onAfterValidated, initialValue})
-      : super(text: initialValue);
+  ValidatingTextEditingController({
+    this.validator,
+    this.asyncValidator,
+    this.onAfterValidated,
+    initialValue,
+  }) : super(text: initialValue);
 
   bool get isValidating => _isValidating;
 

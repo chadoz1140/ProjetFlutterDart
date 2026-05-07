@@ -25,7 +25,7 @@ class ApiClient {
       headers: {
         ...?headers,
         'Content-Type': 'application/json; charset=UTF-8',
-        if (!anonymous) 'Authorization': 'Bearer ${Params.getValue('token')}'
+        if (!anonymous) 'Authorization': 'Bearer ${Params.getValue('token')}',
       },
     );
   }
@@ -43,7 +43,7 @@ class ApiClient {
       headers: {
         ...?headers,
         'Content-Type': 'application/json; charset=UTF-8',
-        if (!anonymous) 'Authorization': 'Bearer ${Params.getValue('token')}'
+        if (!anonymous) 'Authorization': 'Bearer ${Params.getValue('token')}',
       },
       body: body,
     );
