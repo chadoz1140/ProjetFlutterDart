@@ -7,7 +7,9 @@ create or replace function reservation_not_editable()
 $$
 begin
      if old.status in ('completed', 'cancelled') then
-        raise exception 'Reservation completed or cancelled: no changes possible.';
+         if new is distinct from old then
+             raise exception 'Reservation completed or cancelled: no changes possible.';
+         end if;
      end if;
      return new;
 end;
@@ -19,6 +21,3 @@ create trigger reservation_not_editable_trigger
     before update on reservations
     for each row
 execute function reservation_not_editable();
-
-
-

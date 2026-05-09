@@ -1,11 +1,6 @@
 /**************************************************************
 Contraintes de check table User
 **************************************************************/
--- check email
-ALTER TABLE users
-ADD CONSTRAINT check_email
-check (regexp_match(email, '^[a-zA-Z0-9._%+-]+@epfc\.eu$') is not null);
-
 -- check password
 ALTER TABLE users
 ADD CONSTRAINT check_password
@@ -15,9 +10,6 @@ check(regexp_match(password, '^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[,;.:!?/$%&@#]
 ALTER TABLE users
 ADD CONSTRAINT check_full_name
 check (length(trim(full_name)) >=3);
-
-insert into users values (20, 'test', 'test', 'te'); -- Test KO
-insert into users values (20, 'test@epfc.eu', 'Password1,', 'test'); -- Test OK
 
 /**************************************************************
 Contraintes de check table Restaurant
@@ -41,8 +33,10 @@ check ( length(trim(city)) >= 3 );
 -- numéro de téléphone Belge valide
 ALTER TABLE restaurants
 ADD CONSTRAINT check_phone
-CHECK (regexp_match(phone, '^(\+32\s?|0)[1-9]\d{0,2}(\s?\d{2}){3}$') IS NOT NULL)
-NOT VALID;
+check (
+    regexp_replace(phone, '[[:space:]]+', '', 'g')
+        ~ '^(\+32[1-9][0-9]{7,8}|0[1-9][0-9]{7,8})$'
+);
 
 --la description contient au moins 10 caract si fournie
 ALTER TABLE restaurants
