@@ -12,7 +12,7 @@ CREATE OR REPLACE FUNCTION verify_user_role_new_reservation()
             end if;
             return new;
         end;
-    $$language plpgsql;
+    $$ language plpgsql;
 
 CREATE OR REPLACE TRIGGER trigger_verify_user_reservation
     BEFORE INSERT
