@@ -2,22 +2,32 @@
 Trigger qui empêche la modification d'une réservation terminée ou annulée
 ****************************************************************************/
 
-create or replace function reservation_not_editable()
-    returns trigger as
-$$
-begin
-     if old.status in ('completed', 'cancelled') then
-         if new is distinct from old then
-             raise exception 'Reservation completed or cancelled: no changes possible.';
-         end if;
-     end if;
-     return new;
-end;
-$$ language plpgsql;
+DROP TRIGGER IF EXISTS reservation_editable_trigger_validation ON reservations;
+DROP FUNCTION IF EXISTS reservation_editable_validation();
 
-drop trigger if exists reservation_not_editable_trigger on reservations;
+CREATE OR REPLACE FUNCTION reservation_editable_validation()
+    RETURNS TRIGGER AS $$
+    BEGIN
+        IF OLD.status IN ('completed', 'cancelled')
+        THEN
+            RAISE EXCEPTION 'Une réservation % ne peut pas être modifiée.', OLD.status;
+        END IF;
 
-create trigger reservation_not_editable_trigger
-    before update on reservations
-    for each row
-execute function reservation_not_editable();
+        RETURN NEW;
+    END;
+    $$ LANGUAGE plpgsql;
+
+CREATE TRIGGER reservation_editable_trigger_validation
+BEFORE UPDATE ON reservations
+FOR EACH ROW
+EXECUTE FUNCTION reservation_editable_validation();
+
+
+/**
+
+SELECT id , status,special_requests FROM reservations;
+-- FAILED
+UPDATE reservations SET special_requests = 'special table' WHERE  id = 8; -- CANCELED
+UPDATE reservations SET special_requests = 'special table' WHERE  id = 12; -- COMPLETED
+-- SUCCESS
+UPDATE reservations SET special_requests = 'special table' WHERE  id = 7; -- CONFIRMED**/

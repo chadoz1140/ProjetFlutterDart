@@ -1,73 +1,49 @@
-drop function if exists check_same_service_restaurant_reservation_fct();
-create or replace function check_same_service_restaurant_reservation_fct()
+DROP TRIGGER IF EXISTS valid_client_reservation_conflict_trigger ON reservations;
+DROP FUNCTION IF EXISTS valid_client_reservation_conflict();
 
-                  returns trigger as
-$$
-    begin
-        if new.status not in ('pending', 'confirmed', 'completed') then
-            return new;
-        end if;
+CREATE OR REPLACE FUNCTION valid_client_reservation_conflict()
+    RETURNS TRIGGER AS $$
+    DECLARE
+    r_conflict INT;
+    BEGIN
+        SELECT COUNT(*) INTO r_conflict
+        FROM reservations r
+            JOIN services s1 ON s1.restaurant = NEW.restaurant
+            AND s1.start_time <= NEW.datetime::time
+            AND s1.end_time   >  NEW.datetime::time
+                 JOIN services s2 ON s2.restaurant = r.restaurant
+            AND s2.start_time <= r.datetime::time
+            AND s2.end_time   >  r.datetime::time
+        WHERE r.client     = NEW.client
+          AND r.id        <> NEW.id
+          AND r.status    IN ('pending', 'confirmed', 'completed')
+          AND NEW.status  IN ('pending', 'confirmed', 'completed')
+          AND DATE(r.datetime) = DATE(NEW.datetime)
+          AND s1.id        = s2.id;
 
-        if exists(
-            select 1
-            from reservations r, services s
-            where r.status in('pending', 'confirmed', 'completed')
-            and r.client = new.client
+        IF r_conflict > 0 THEN
+            RAISE EXCEPTION
+                'Le client % a déjà une réservation pour cette date et ce service.', NEW.client;
+        END IF;
 
-            and extract(isodow from new.datetime) = s.day_of_week
-            and new.datetime::time between s.start_time and s.end_time
+        RETURN NEW;
+    END;
+    $$ LANGUAGE plpgsql;
 
-            and extract(isodow from r.datetime) = s.day_of_week --même jour que celui de new
-            and r.datetime::time between s.start_time and s.end_time --meme service que celui de new
+CREATE OR REPLACE  TRIGGER valid_client_reservation_conflict_trigger
+BEFORE INSERT OR UPDATE ON reservations
+FOR EACH ROW
+EXECUTE FUNCTION valid_client_reservation_conflict();
 
-            and r.datetime::date = new.datetime::date --même date
-
-            and r.restaurant = new.restaurant
-            and s.restaurant = new.restaurant --pour que le sql prend pas un autre service d'un autre restaut
-
-            and r.id != new.id --deux réservation différent
-
-        ) then raise exception 'Client already has a reservation in this service';
-        end if;
-        return new;
-    end;
-
-$$language plpgsql;
-
-drop trigger if exists check_same_service_restaurant_reservation_trigger on reservations;
-create or replace trigger check_same_service_restaurant_reservation_trigger
-before INSERT OR UPDATE
-on reservations
-for each row
-execute function check_same_service_restaurant_reservation_fct();
-
-/**************************************************************
-***********    Tests ******
-**************************************************************/
-
-/**************** test valide deux horaires différents *****************/
--- insert into reservations (client, restaurant, datetime, number_of_guests, status)
--- values (1, 1, '2024-11-18 12:30:00', 2, 'confirmed');
---
--- insert into reservations (client, restaurant, datetime, number_of_guests, status)
--- values (1, 1, '2024-11-18 20:00:00', 2, 'confirmed');
-
--- UPDATE doit être bloquer
--- update reservations
--- set datetime = '2024-11-18 20:00:00'
--- where client = 1 and datetime = '2024-11-18 12:30:00';
---
--- /**************** test invalide deux reservation ont même horaires *****************/
--- insert into reservations (client, restaurant, datetime, number_of_guests, status)
--- values (2, 1, '2024-11-18 19:30:00', 2, 'confirmed');
---
--- insert into reservations (client, restaurant, datetime, number_of_guests, status)
--- values (2, 1, '2024-11-18 20:30:00', 2, 'confirmed');
---
---
--- /**************** test valide deux reservation ont même horaires mais deux restau différent *****************/
--- insert into reservations (client, restaurant, datetime, number_of_guests, status)
--- values (3, 1, '2024-11-18 20:00:00', 2, 'confirmed');
---
--- insert into reservations (client, restaurant, datetime, number_of_guests, status)
--- values (3, 2, '2024-11-18 20:00:00', 2, 'confirmed');
+/**
+insert into services (restaurant, day_of_week, start_time, end_time) values (2,6, '10:00:00', '14:00:00')
+select * from services where restaurant=2;
+-- TEST TRIGGER
+SELECT client,restaurant,datetime,status
+FROM reservations;
+-- FAILED
+INSERT INTO reservations (client, restaurant, datetime, number_of_guests)
+VALUES (4, 2, '2024-11-16 21:00:00', 4);
+-- SUCCESS
+INSERT INTO reservations (client, restaurant, datetime, number_of_guests)
+VALUES (4, 2, '2024-11-16 12:30:00', 4); **/

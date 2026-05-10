@@ -1,43 +1,38 @@
-CREATE OR REPLACE FUNCTION verify_last_manager_restaurant()
-    RETURNS TRIGGER AS
-    $$
-        begin
-            if ((select count(*)
-                from restaurant_managers as rm
-                where rm.restaurant = old.restaurant) = 1)
-            then
-                raise exception 'He was the last manager of the restaurant';
-            end if;
+DROP TRIGGER IF EXISTS restaurant_has_manager_trigger ON restaurant_managers;
+DROP FUNCTION IF EXISTS restaurant_has_manager();
 
-            return old;
-        end;
-    $$language plpgsql;
+CREATE OR REPLACE FUNCTION restaurant_has_manager()
+    RETURNS TRIGGER AS $$
+    DECLARE
+        rm_count INT;
+    BEGIN
+        SELECT COUNT(*) INTO rm_count
+        FROM restaurant_managers
+        WHERE restaurant = OLD.restaurant;
 
-CREATE OR REPLACE TRIGGER trigger_delete_manager
-    BEFORE DELETE
-    ON restaurant_managers
-    FOR EACH ROW
-EXECUTE FUNCTION verify_last_manager_restaurant();
+        IF rm_count = 0
+        THEN
+            RAISE EXCEPTION 'Le restaurant % doit avoir au moins un manager.', OLD.restaurant;
+        END IF;
+
+        RETURN OLD;
+    END;
+    $$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER restaurant_has_manager_trigger
+AFTER DELETE ON restaurant_managers
+FOR EACH ROW
+EXECUTE FUNCTION restaurant_has_manager();
 
 
+-- TEST TRIGGER
+SELECT U.id as managerId , U.full_name,role, RM.restaurant FROM restaurant_managers AS RM
+                                                                    JOIN users AS U
+                                                                         ON U.id = RM.manager;
 
-CREATE OR REPLACE FUNCTION verify_last_manager_user()
-    RETURNS TRIGGER AS
-$$
-begin
-    if exists(select *
-              from restaurant_managers as rm
-              where rm.manager = old.id)
-    then
-        raise exception 'this user is manager of some restaurant';
-    end if;
+-- FAILED
+DELETE FROM restaurant_managers WHERE manager = 1;
+-- SUCCESS
 
-    return old;
-end;
-$$language plpgsql;
-
-CREATE OR REPLACE TRIGGER trigger_update_role_user
-    BEFORE DELETE OR UPDATE OF role
-    ON users
-    FOR EACH ROW
-EXECUTE FUNCTION verify_last_manager_user();
+INSERT INTO restaurant_managers(restaurant,manager) VALUES(1,8);
+DELETE FROM restaurant_managers WHERE manager = 8;

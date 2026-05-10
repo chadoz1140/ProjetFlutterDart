@@ -2,33 +2,68 @@
 Trigger pour vérifier les conflits de réservation de table
 *********************************************************/
 
-create or replace function check_table_reservation_conflict()
-    returns trigger as
-$$
-begin
-    if exists (
-        select 1
-        from reservation_tables rt
-                 join reservations r1 on r1.id = rt.reservation
-                 join reservations r2 on r2.id = new.reservation
-        where rt.table = new.table
-          and r1.id <> r2.id
-          and r1.status in ('confirmed','completed')
-          and r2.status in ('confirmed','completed')
-          and r1.datetime = r2.datetime
-    ) then
-        raise exception
-            'This table already has a confirmed/completed reservation for that date.';
-    end if;
-    return new;
-end;
-$$ language plpgsql;
+DROP TRIGGER IF EXISTS check_table_reservation_conflict_trigger ON reservation_tables;
+DROP FUNCTION IF EXISTS check_table_reservation_conflict();
 
-drop trigger if exists check_table_reservation_conflict_trigger on reservation_tables;
+CREATE OR REPLACE FUNCTION check_table_reservation_conflict()
+    RETURNS TRIGGER AS $$
+    DECLARE
+        r_datetime   TIMESTAMP;
+        r_restaurant INT;
+        r_conflict   INT;
+    BEGIN
+        SELECT "datetime", restaurant INTO r_datetime, r_restaurant FROM reservations WHERE id = NEW.reservation;
 
-create trigger check_table_reservation_conflict_trigger
-    before insert or update on reservation_tables
-    for each row
-    execute function check_table_reservation_conflict();
+        SELECT COUNT(*) INTO r_conflict
+        FROM reservation_tables rt
+                 JOIN reservations r ON r.id = rt.reservation
+                 JOIN services s1 ON s1.restaurant = r_restaurant
+                 JOIN services s2 ON s2.restaurant = r.restaurant
+        WHERE rt.table = NEW.table
+          AND rt.reservation <> NEW.reservation
+          AND r.status IN ('confirmed', 'completed')
+          AND DATE(r.datetime) = DATE(r_datetime)
+          AND s1.id = (
+            SELECT id FROM services
+            WHERE restaurant = r_restaurant
+              AND start_time <= r_datetime::time
+              AND end_time   >= r_datetime::time
+            LIMIT 1
+        )
+          AND s2.id = s1.id;
+
+        IF r_conflict > 0 THEN
+            RAISE EXCEPTION
+                'La table % est déjà réservée (confirmed/completed) pour cette date et ce service.',
+                NEW.table;
+        END IF;
+
+        RETURN NEW;
+    END;
+$$ LANGUAGE plpgsql;
 
 
+
+CREATE OR REPLACE TRIGGER check_table_reservation_conflict_trigger
+BEFORE INSERT OR UPDATE ON reservation_tables
+FOR EACH ROW
+EXECUTE FUNCTION check_table_reservation_conflict();
+
+
+/**
+SELECT R.id AS reservationId ,R.datetime ,  R.restaurant , R.status
+FROM reservations as R;
+
+SELECT R.id AS reservationId ,R.datetime ,  R.restaurant , R.status , RT.table, R.client
+FROM reservation_tables AS RT
+         JOIN reservations AS R
+              ON R.id = RT.reservation;
+
+INSERT INTO reservations (client, restaurant, datetime, number_of_guests, status, special_requests)
+VALUES (3, 1, '2024-11-15 19:00:00', 4, 'pending', 'Window table');
+
+-- FAILED
+INSERT INTO reservation_tables(reservation,"table") VALUES(46,1);
+
+-- SUCCESS
+INSERT INTO reservation_tables(reservation,"table") VALUES(46,3);**/
