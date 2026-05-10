@@ -6,10 +6,21 @@
     <script-file value="$PROJECT_DIR$/backend/scripts/04.00_checks.sql" />
     <script-file value="$PROJECT_DIR$/backend/scripts/04.01_br_reservation_for_client.sql" />
     <script-file value="$PROJECT_DIR$/backend/scripts/04.02_br_check_reservation_tables_capacity.sql" />
+<<<<<<< HEAD
     <script-file value="$PROJECT_DIR$/backend/scripts/04.03_br_tables_meme_restaurant.sql" />
     <script-file value="$PROJECT_DIR$/backend/scripts/04.07_br_service_time_overlap.sql" />
     <script-file value="$PROJECT_DIR$/backend/scripts/04.10_br_restaurant_managers.sql" />
     <script-file value="$PROJECT_DIR$/backend/scripts/04.12_br_reservation_cancelled_or_update.sql" />
+=======
+    <script-file value="$PROJECT_DIR$/backend/scripts/04.03_br_check_table_belongs_to_restaurant.sql" />
+    <script-file value="$PROJECT_DIR$/backend/scripts/04.07_br_service_time_overlap.sql" />
+    <script-file value="$PROJECT_DIR$/backend/scripts/04.08_br_check_slot_duration.sql" />
+    <script-file value="$PROJECT_DIR$/backend/scripts/04.10_br_restaurant_managers.sql" />
+    <script-file value="$PROJECT_DIR$/backend/scripts/04.12_br_reservation_cancelled_or_update.sql" />
+    <script-file value="$PROJECT_DIR$/backend/scripts/04.13_br_check_same_service_restaurant.sql" />
+    <script-file value="$PROJECT_DIR$/backend/scripts/04.14_br_check_reservation_time_rules.sql" />
+    <script-file value="$PROJECT_DIR$/backend/scripts/trigger_tables_restaurant_unmodifiable.sql" />
+>>>>>>> 4e8fb76ed422617ea31c45b481d7e92545c5871b
     <script-mode>FILE</script-mode>
     <data-source id="6d275bb5-c69c-4f95-bc29-f6a29631655b" namespace="database/&quot;prbd-2526-c01&quot;" />
     <method v="2" />

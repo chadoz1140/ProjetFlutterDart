@@ -7,7 +7,7 @@ CREATE OR REPLACE FUNCTION verify_if_time_overlap()
             if exists(select *
                       from services as s
                       where s.day_of_week = new.day_of_week and s.restaurant = new.restaurant
-                          and s.start_time < new.end_time and new.start_time < s.end_time)
+                          and s.start_time < new.end_time and new.start_time < s.end_time and s.id <> new.id)
             then
                 raise exception 'time overlap with other service';
             end if;
