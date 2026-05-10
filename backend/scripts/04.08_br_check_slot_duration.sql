@@ -9,7 +9,7 @@ $$
                   ((extract(minutes from new.start_time) % r.slot_duration != 0) or
                (extract(minutes from new.end_time) % r.slot_duration != 0))
        ) then
-           raise exception 'impossible';
+           raise exception 'Service times must align with the restaurant''s slot duration.';
        end if;
        return new;
     end;
@@ -27,7 +27,7 @@ $$
                 (extract(minutes from s.end_time) % new.slot_duration != 0))
             )
          then
-            raise exception 'impossible';
+            raise exception 'Service times must align with the restaurant''s slot duration.';
         end if;
         return new;
     end;
