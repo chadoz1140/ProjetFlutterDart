@@ -1,153 +1,118 @@
 /***************************************************************************
-Trigger pour vérifier le capacité des tables par rapport nombres de convives
+Trigger pour vérifier la capacité des tables par rapport nombres de convives
 ****************************************************************************/
 
---trigger pour la table des reservation_tables
+-- CHECK TABLES CAPACITY WHEN TABLE REMOVE
 
-drop function if exists check_reservation_tables_capacity();
-create or replace function check_reservation_tables_capacity()
-    returns trigger as
-$$
-declare
-    nb_guest_old_reservation int;
-    status_old_reservation text;
-begin
-    select number_of_guests, status
-    into nb_guest_old_reservation, status_old_reservation
-    from reservations
-    where id = old.reservation;
+DROP TRIGGER IF EXISTS check_reservation_tables_capacity_trigger ON reservation_tables;
 
-    if status_old_reservation in ('confirmed', 'completed') then
-        if exists (
-            select 1
-            from reservation_tables rt
-                     join tables t on rt."table" = t.id
-            where rt.reservation = old.reservation
-            having sum(t.capacity) < nb_guest_old_reservation
-                or sum(t.capacity) is null
-        ) then
-            raise exception 'The capacity of the tables for this reservation is insufficient.';
-        end if;
+DROP FUNCTION IF EXISTS check_reservation_tables_capacity();
 
-    end if;
+CREATE OR REPLACE FUNCTION check_reservation_tables_capacity()
+    RETURNS trigger AS
+    $$
+    DECLARE
+        nb_guest_old_reservation INT;
+        status_old_reservation TEXT;
+    BEGIN
+        SELECT number_of_guests, "status"
+        INTO nb_guest_old_reservation, status_old_reservation
+        FROM reservations
+        WHERE id = OLD.reservation;
 
-    return null;
-end;
-$$ language plpgsql;
+        IF status_old_reservation IN ('confirmed', 'completed')
+        THEN
+            IF EXISTS (SELECT 1 FROM reservation_tables rt
+                                         JOIN tables t ON rt."table" = t.id
+                       WHERE rt.reservation = OLD.reservation
+                       HAVING SUM(t.capacity) < nb_guest_old_reservation  OR SUM(t.capacity) is null
+            )
+            THEN
+                RAISE EXCEPTION 'The capacity of the assigned tables for this reservation is insufficient, or no tables have been assigned yet.';
+            END IF;
 
-drop trigger if exists check_reservation_tables_capacity_trigger on reservation_tables;
-create constraint trigger check_reservation_tables_capacity_trigger
-    after delete on reservation_tables
-    deferrable initially deferred
-    for each row
-execute function check_reservation_tables_capacity();
+        END IF;
+        RETURN NULL;
+    END;
+    $$ LANGUAGE plpgsql;
+
+CREATE CONSTRAINT TRIGGER check_reservation_tables_capacity_trigger
+AFTER DELETE OR UPDATE ON reservation_tables
+DEFERRABLE INITIALLY DEFERRED
+FOR EACH ROW
+EXECUTE FUNCTION check_reservation_tables_capacity();
 
 --trigger pour la table des reservations
 --si on crée une réservation ou on modifie le status avec un status valide ça peut casser la régle
 
-drop function if exists check_reservation_guest_and_status();
-create or replace function check_reservation_guest_and_status()
-returns trigger as
-$$
-    begin
-        if new.status in ('confirmed', 'completed') and exists(
-            select 1
-            from reservation_tables rt
-            join tables t on t.id = rt."table"
-            where rt.reservation = new.id
-            having sum(t.capacity) <  new.number_of_guests or sum(t.capacity) is null
-        ) then
-            raise exception 'The capacity of the tables for this reservation is insufficient.';
-        end if;
-        return new;
-    end;
-$$language plpgsql;
+DROP TRIGGER IF EXISTS check_reservation_guest_and_status_trigger ON reservations;
 
-drop trigger if exists check_reservation_guest_and_status_trigger on reservations;
-create or replace trigger check_reservation_guest_and_status_trigger
-before INSERT OR UPDATE
-on reservations
-for each row
-execute function check_reservation_guest_and_status();
+DROP FUNCTION IF EXISTS check_reservation_guest_and_status();
 
+CREATE OR REPLACE FUNCTION check_reservation_guest_and_status()
+    RETURNS trigger AS
+    $$
+    BEGIN
+        IF NEW.status IN ('confirmed', 'completed') AND EXISTS(
+            SELECT 1
+            FROM reservation_tables rt
+                     JOIN tables t ON t.id = rt."table"
+            WHERE rt.reservation = NEW.id
+            HAVING SUM(t.capacity) <  NEW.number_of_guests OR SUM(t.capacity) IS NULL
+        )
+        THEN
+            RAISE EXCEPTION  'The capacity of the assigned tables for this reservation is insufficient, or no tables have been assigned yet.';
+        END IF;
+        RETURN NEW;
+    END;
+    $$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER check_reservation_guest_and_status_trigger
+BEFORE INSERT OR UPDATE
+ON reservations
+FOR EACH ROW
+EXECUTE FUNCTION check_reservation_guest_and_status();
 
 --trigger pour la table des tables
 --si on change la capacité d'une table ou on suprrime une table ça casse une reservation
 
-drop function if exists check_capacity_tables();
-create or replace function check_capacity_tables()
-returns trigger as
-$$
-    begin
-        if exists(
-            select 1
-            from reservations r
-            join reservation_tables rt on r.id = rt.reservation
-            join tables t on t.id = rt."table"
-            where r.status in ('confirmed', 'completed')
-            and r.id in (             --les reservations qui utilisent les tables modifiés
-                select rt2.reservation
-                from reservation_tables rt2
-                where old.id = rt2."table"
-            )
-            group by r.id, r.number_of_guests  --pour chaque reservation
-            having sum(t.capacity) < r.number_of_guests --On vérifie si la somme des capacités de toutes les tables associées à la réservation est insuffisante
-        ) then
-            raise exception 'Insufficient table capacity for this reservation.';
-        end if;
-        return null;
---         if tg_op in ('UPDATE') then
---             return new;
---         elsif tg_op in ('DELETE') then
---             return old;
---         end if;
-    end;
-$$language plpgsql;
+-- CHECK TABLES CAPACITY WHEN TABLE UPDATE
+DROP TRIGGER IF EXISTS check_capacity_tables_trigger ON tables;
+DROP FUNCTION IF EXISTS check_capacity_tables();
 
-drop trigger if exists check_capacity_tables_trigger on tables;
-create or replace trigger check_capacity_tables_trigger
-after UPDATE
-on tables
-for each row
-execute function check_capacity_tables();
+CREATE OR REPLACE FUNCTION check_capacity_tables()
+    RETURNS trigger AS
+    $$
+    BEGIN
+        IF EXISTS(
+            SELECT 1 FROM reservations r
+            JOIN reservation_tables rt ON r.id = rt.reservation
+            JOIN tables t ON t.id = rt."table"
+            WHERE r.status IN ('confirmed', 'completed')
+              AND r.id IN ( SELECT rt2.reservation FROM reservation_tables rt2 WHERE OLD.id = rt2."table")
+            GROUP BY r.id, r.number_of_guests
+            HAVING SUM(t.capacity) < r.number_of_guests
+        )
+        THEN
+            RAISE EXCEPTION 'Insufficient table capacity for this reservation.';
+        END IF;
+        RETURN NULL;
+    END;
+    $$ LANGUAGE plpgsql;
 
 
-/**************************************************************
-***********    Tests ******
-**************************************************************/
---la table des tables : la reservation id=7 avec 8 guests, à deux tables associées 2 et 3
--- delete from tables
--- where id = 3;
---
--- UPDATE tables
--- SET capacity = 2
--- WHERE id = 3;
--- --la table des reservations :
--- --le cas d'insert : nouveau reservation avec un status ('confirmed', 'completed') mais les tables == null
--- insert into reservations (client, restaurant, datetime, number_of_guests, status)
--- values (3, 1, '2025-12-10 19:00:00', 10, 'confirmed');
--- --le cas d'un update :
--- UPDATE reservations
--- SET number_of_guests = 10
--- WHERE id = 1;
---
--- UPDATE reservations
--- SET status = 'confirmed'
--- WHERE id = 2;
---
--- --la table des reservation_tables :
--- --le teste passe pas
--- BEGIN;
--- DELETE FROM reservation_tables
--- WHERE reservation = 7;
--- COMMIT;
---
--- -- test passe aprés la transaction, la vérification est valide pas d'erreur
--- BEGIN;
--- DELETE FROM reservation_tables WHERE reservation = 7;
--- UPDATE reservations SET status = 'cancelled' WHERE id = 7;
--- COMMIT;
---
--- BEGIN;
---
--- ROLLBACK;
+CREATE OR REPLACE TRIGGER check_capacity_tables_trigger
+AFTER UPDATE
+ON tables
+FOR EACH ROW
+EXECUTE FUNCTION check_capacity_tables();
+
+/**
+update reservations set status = 'confirmed' where id = 2;
+update reservations set number_of_guests = 5 where id = 20;
+delete from reservation_tables where reservation = 7 and "table" = 3;
+update tables set capacity = 1 where id = 1;
+insert into reservations (client, restaurant, datetime, number_of_guests, status)
+values ( 6 , 1, '2024-12-06 19:00:00', 4, 'pending');
+update reservations set number_of_guests = 4 where id = 11;
+*/
