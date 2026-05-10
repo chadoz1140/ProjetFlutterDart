@@ -2,74 +2,85 @@
 Trigger de transition de statut de réservation
 ************************************************/
 
-create or replace function reservation_status_transition()
-       returns trigger as
-$$
-begin
-    -- Règle d'insérer une nouvelle réservation
-    if tg_op = 'INSERT' then
-       if new.status is distinct from 'pending' then
-            raise exception 'reservation must start with status pending.';
-       end if;
-       return new;
-    end if;
+DROP TRIGGER IF EXISTS reservation_status_transition_trigger ON reservations;
+DROP FUNCTION IF EXISTS reservation_status_transition();
 
-    -- Aucune modification par rapport aux transitions cancelled et completed
-    if old.status in ('cancelled', 'completed') then
-        if new.status <> old.status then
-            raise exception 'Cannot modify a completed or cancelled reservation.';
-        end if;
-    end if;
+CREATE OR REPLACE FUNCTION reservation_status_transition()
+    RETURNS TRIGGER AS $$
+    DECLARE
+        simulate_time TIMESTAMP;
+    BEGIN
+        -- INSERT NEW RESERVATION
+        IF TG_OP = 'INSERT'
+        THEN
+            IF NEW.status <> 'pending' THEN
+                RAISE EXCEPTION 'Une nouvelle réservation doit avoir le status pending.';
+            END IF;
+            RETURN NEW;
+        END IF;
 
-    -- Aucun changement
-    if new.status = old.status then
-       return new;
-    end if;
+        --  STATUS NOT CHANGED
+        IF OLD.status = NEW.status
+        THEN
+            RETURN NEW;
+        END IF;
 
-    -- pending transition
-    if old.status = 'pending' then
-       if new.status = 'confirmed' then
-                return new;
-       end if;
+        --  UPDATE STATUS
+        IF OLD.status = 'completed' OR OLD.status = 'cancelled'
+        THEN
+            RAISE EXCEPTION 'Aucune transition depuis % n''est autorisée.', OLD.status;
+        END IF;
 
-       if new.status = 'cancelled' then
-          return new;
-       end if;
+        IF OLD.status = 'pending' AND NEW.status NOT IN ('confirmed', 'cancelled')
+        THEN
+            RAISE EXCEPTION 'Transition % -> % non autorisée.', OLD.status, NEW.status;
+        END IF;
 
-       raise exception 'Invalid transition pending->%', new.status;
-    end if;
+        IF OLD.status = 'confirmed' AND NEW.status = 'pending'
+        THEN
+            SELECT COALESCE(simulated_time, NOW()) INTO simulate_time FROM system_time LIMIT 1;
 
-    -- confirmed transition
-      if old.status ='confirmed' then
-         if new.status = 'completed' then
-            return new;
-         end if;
+            IF simulate_time IS NULL
+            THEN
+                simulate_time := NOW();
+            END IF;
 
-         if new.status = 'cancelled' then
-            return new;
-         end if;
+            IF NEW.datetime <= simulate_time
+            THEN
+                RAISE EXCEPTION
+                    'Transition confirmed -> pending non autorisée : la réservation n''est pas dans le futur.';
+            END IF;
 
-         if new.status = 'pending' then
-            if new.datetime <= now() then
-                raise exception 'Cannot revert confirmed->pending for past reservation.';
-            end if;
-            return new;
-         end if;
+        END IF;
 
-         raise exception 'Invalid transition confirmed->%', new.status;
-      end if;
-
-      -- fallback
-      raise exception 'Invalid transitions.';
-end;
-
-$$ language plpgsql;
-
-drop trigger if exists reservation_status_transition_trigger on reservations;
+        IF OLD.status = 'confirmed' AND NEW.status NOT IN ('completed', 'cancelled','pending')
+        THEN
+            RAISE EXCEPTION 'Transition % -> % non autorisée.', OLD.status, NEW.status;
+        END IF;
 
 
-create trigger reservation_status_transition_trigger
-before insert or update on reservations
-for each row
-execute function reservation_status_transition();
+        RETURN NEW;
+    END;
+    $$ LANGUAGE plpgsql;
 
+CREATE OR REPLACE TRIGGER reservation_status_transition_trigger
+BEFORE INSERT OR UPDATE ON reservations
+FOR EACH ROW
+EXECUTE FUNCTION reservation_status_transition();
+
+
+
+/**
+SELECT id,status,datetime FROM reservations;
+INSERT INTO system_time (simulated_time) VALUES ('2026-05-07 10:00:00');
+SELECT * FROM system_time;
+-- FAILED
+INSERT INTO reservations (client, restaurant, datetime, number_of_guests, status, special_requests)
+VALUES (1, 1, '2026-05-08 21:00:00', 4, 'cancelled', 'Window table');
+
+UPDATE reservations SET status = 'completed' WHERE id = 2;
+
+UPDATE reservations SET status = 'pending' WHERE id = 1;
+
+-- SUCCESS
+UPDATE reservations SET status = 'confirmed' WHERE id = 5;**/

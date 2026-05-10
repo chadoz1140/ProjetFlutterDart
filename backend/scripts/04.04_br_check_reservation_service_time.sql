@@ -1,27 +1,45 @@
 /************************************************************
 Trigger pour vérifier les horaires du service de réservation
 *************************************************************/
-create or replace function check_reservation_service_time()
-       returns trigger as
-$$
-begin
-    if not exists (
-        select 1
-        from services s
-        where s.restaurant = new.restaurant
-            and s.day_of_week = extract(isodow from new.datetime)::int
-            and s.start_time <= new.datetime::time
-            and s.end_time >= new.datetime::time
-    ) then
-        raise exception 'Reservation time must be within a service period for that restaurant.';
-    end if;
-    return new;
-end;
-$$ language plpgsql;
 
-drop trigger if exists check_reservation_service_time_trigger on reservations;
 
-create trigger check_reservation_service_time_trigger
-before insert or update  on reservations
-for each row
-execute function check_reservation_service_time();
+DROP TRIGGER IF EXISTS check_reservation_service_time_trigger on reservations;
+DROP FUNCTION IF EXISTS check_reservation_service_time();
+
+CREATE OR REPLACE FUNCTION check_reservation_service_time()
+    RETURNS trigger AS
+    $$
+    BEGIN
+        IF NEW.status IN ('confirmed', 'completed','pending') AND NOT EXISTS (
+            SELECT 1
+            FROM services s
+            WHERE s.restaurant = NEW.restaurant
+              AND s.day_of_week = EXTRACT(isodow FROM NEW.datetime::timestamp)::int
+              AND NEW.datetime::time BETWEEN s.start_time AND s.end_time
+        )
+        THEN
+            RAISE EXCEPTION 'Reservation time must be within a service period for that restaurant.';
+        END IF;
+        RETURN NEW;
+    END;
+    $$ LANGUAGE plpgsql;
+
+
+CREATE TRIGGER check_reservation_service_time_trigger
+BEFORE INSERT OR UPDATE
+ON reservations
+FOR EACH ROW
+EXECUTE FUNCTION check_reservation_service_time();
+
+SELECT * FROM information_schema.triggers;
+
+/**
+insert into reservations (client, restaurant, datetime, number_of_guests, status)
+values (3, 1, '2024-12-07 12:00:00', 2, 'pending');
+insert into reservations (client, restaurant, datetime, number_of_guests, status)
+values (4, 1, '2024-12-06 19:00:00', 2, 'pending');
+update reservations set datetime = '2024-12-09 19:00:00' where id = 14;
+update reservations set datetime = '2024-12-07 10:00:00' where id = 14;
+update reservations set status = 'cancelled', datetime = '2024-12-07 10:00:00' where id = 20;
+
+select * from reservations; **/
