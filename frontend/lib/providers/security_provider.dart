@@ -11,7 +11,7 @@ final securityProvider = AsyncNotifierProvider<SecurityNotifier, String?>(
 
 class SecurityNotifier extends AsyncNotifier<String?> {
   @override
-  FutureOr<String?> build() {
+  Future<String?> build() async {
     state = AsyncData(Params.getValue('token'));
     return state.value;
   }

@@ -17,19 +17,13 @@ class LoginPage extends ConsumerStatefulWidget {
 class _LoginPageState extends ConsumerState<LoginPage>{
   static const String _debugPassword = 'Password1,';
 
-  late var _emailController = ValidatingTextEditingController(
-    validator:(value)=> User.validateEmail(value, isLogin: true),
-
-  );
-  late var _passwordController = ValidatingTextEditingController(
-    validator: User.validatePasswordLogin,
-  );
+  late ValidatingTextEditingController _emailController;
+  late ValidatingTextEditingController _passwordController;
 
   @override
   void initState(){
-    _emailController.onAfterValidated = () => setState(() {});
-    _passwordController.onAfterValidated = () => setState(() {});
     super.initState();
+    _initControllers();
   }
 
   @override
@@ -303,7 +297,7 @@ class _LoginPageState extends ConsumerState<LoginPage>{
 
     if(!context.mounted) return;
     securityState.when(
-        data: (_) => Navigator.pushReplacementNamed(context, '/home'),
+        data: (_) => Navigator.pushReplacementNamed(context, '/searchRestaurants'),
         error: (error, _) => _showErrorOrSuccesMessage(context, 'Email ou mot de passe incorrect', true),
         loading: (){},
     );
@@ -353,17 +347,21 @@ class _LoginPageState extends ConsumerState<LoginPage>{
     _emailController.dispose();
     _passwordController.dispose();
 
+    _initControllers();
+    setState(() {});
+  }
 
+  void _initControllers(){
     _emailController = ValidatingTextEditingController(
-        validator: User.validateEmail,
-        asyncValidator: User.validateEmailUnicity);
+      validator: (value) => User.validateEmail(value, isLogin: true)
+    );
+
     _emailController.onAfterValidated = () => setState(() {});
 
     _passwordController = ValidatingTextEditingController(
-        validator: User.validatePasswordSignup);
+        validator: User.validatePasswordLogin
+    );
     _passwordController.onAfterValidated = () => setState(() {});
-
-    setState(() {});
   }
 
 }
