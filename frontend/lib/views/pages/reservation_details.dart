@@ -202,7 +202,7 @@ class ReservationDetails extends ConsumerWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          loadedReservation.specialRequest,
+                          loadedReservation.specialRequest ?? '',
                           style: TextStyle(color: Colors.grey[700]),
                         ),
                       ],

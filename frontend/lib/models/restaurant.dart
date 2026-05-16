@@ -9,16 +9,16 @@ class Restaurant {
   final int priceRange;
   final int slotDuration;
 
-  Restaurant({
-    this.id = 0,
-    this.name = "",
-    this.address = "",
-    this.city = "",
-    this.phone = "",
-    this.description = "",
-    this.rating = 0.0,
-    this.priceRange = 0,
-    this.slotDuration = 0
+  const Restaurant({
+    required this.id,
+    required this.name,
+    required this.address,
+    required this.city,
+    required this.phone,
+    required this.description,
+    required this.rating,
+    required this.priceRange,
+    required this.slotDuration
   });
 
   factory Restaurant.fromJson(Map<String, dynamic> json) {

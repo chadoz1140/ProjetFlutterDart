@@ -6,22 +6,23 @@ import 'package:prbd_2526_c01/models/status.dart';
 import 'package:prbd_2526_c01/models/user.dart';
 
 class Reservation{
-  final int id;
-  final User client;
+  final int? id;
+  final User? client;
   final Restaurant restaurant;
   final DateTime dateTime;
   final int numberOfGuests;
   final Status status;
-  final String specialRequest;
+  final String? specialRequest;
 
-  Reservation({
-    required this.id,
-    required this.client,
+  //tout les champs ne sont pas required, pour la création d'une réservation
+  const Reservation({
+    this.id,
+    this.client,
     required this.restaurant,
     required this.dateTime,
     required this.numberOfGuests,
-    required this.status,
-    this.specialRequest = ''
+    this.status = Status.pending,
+    this.specialRequest
   });
 
   factory Reservation.fromJson(Map<String, dynamic> json) {
