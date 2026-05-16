@@ -18,25 +18,26 @@ class ReservationsNotifier extends AbstractAsyncNotifier<List<Reservation>> {
   @override
   Future<List<Reservation>> build() async {
     ref.watch(securityProvider);
-    state = AsyncData(([]));
-    state = AsyncLoading();
-    try {
-       return await Reservation.getReservations(status: _currentStatus);
-    }catch(e) {
-      throw "Something went wrong loading reservations!\n Please try again later.";
+    try{
+      return await Reservation.getReservations(status: _currentStatus);
+    }catch(e, stackTrace) {
+      state= AsyncValue.error(
+      "Something went wrong loading reservations!\n Please try again later?",
+      stackTrace,);
     }
+     return [];
   }
 
   @override
   Future<void> refresh() async {
-     await getReservations(_currentStatus);
+    _currentStatus = null;
+     await getReservations(null);
   }
 
   Future<void> getReservations(String? status) async {
     _currentStatus = status;
     state = const AsyncValue.loading();
     try {
-      state = const AsyncValue.loading();
       final reservations = await Reservation.getReservations(status: status);
       state = AsyncValue.data(reservations);
     }catch(e, stackTrace) {

@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:http/http.dart';
-import 'package:intl/date_symbol_data_local.dart';
 import 'package:prbd_2526_c01/core/widgets/data_error_widget.dart';
 import 'package:prbd_2526_c01/models/reservation.dart';
 import 'package:prbd_2526_c01/providers/reservations_provider.dart';
@@ -13,7 +11,7 @@ class HomeClient extends ConsumerStatefulWidget{
   const HomeClient({super.key});
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() => _HomeClientState();
+  ConsumerState<HomeClient> createState() => _HomeClientState();
 
 }
 
@@ -58,7 +56,10 @@ class _HomeClientState extends ConsumerState<HomeClient> {
           IconButton(
             icon: const Icon(Icons.refresh),
             tooltip: 'Rafraîchir les données',
-            onPressed: () => notifier.refresh(),
+            onPressed: () {
+              setState(() => _selectedStatus = 'all');
+              notifier.refresh();
+            },
           ),
           IconButton(
             icon: const Icon(Icons.logout),
