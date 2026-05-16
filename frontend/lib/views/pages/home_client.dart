@@ -109,7 +109,8 @@ class _HomeClientState extends ConsumerState<HomeClient> {
                         Navigator.pushNamed(
                           context,
                           '/reservation_details',
-                          //arguments: reservationId,
+                          //arguments: 19    après << arguments: >> on met l'id de la reservation ,
+                          //                 pour afficher la page reservation_details sinon elle ne s'affiche pas
                         );
                       },
                       child: Padding(
