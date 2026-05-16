@@ -7,6 +7,7 @@ import 'package:prbd_2526_c01/views/pages/home_client.dart';
 import 'package:prbd_2526_c01/views/pages/signup_page.dart';
 import '../providers/security_provider.dart';
 import '../views/pages/login_page.dart';
+import '../views/pages/reservation_details.dart';
 
 class MyApp extends ConsumerWidget{
   const MyApp({super.key});
@@ -26,6 +27,7 @@ class MyApp extends ConsumerWidget{
         '/login' : (context) => LoginPage(),
         '/home' : (context) => HomeClient(),
         '/signup': (context) => SignupPage(),
+        '/reservation_details': (context) => ReservationDetails(),
       },
     );
   }

@@ -105,7 +105,13 @@ class _HomeClientState extends ConsumerState<HomeClient> {
                   Card(
                     margin: const EdgeInsets.only(bottom: 16),
                     child: InkWell(
-                      onTap: () {},
+                      onTap: () {
+                        Navigator.pushNamed(
+                          context,
+                          '/reservation_details',
+                          //arguments: reservationId,
+                        );
+                      },
                       child: Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: Row(
