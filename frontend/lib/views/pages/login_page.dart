@@ -298,7 +298,7 @@ class _LoginPageState extends ConsumerState<LoginPage>{
 
     if(!context.mounted) return;
     securityState.when(
-        data: (_) => Navigator.pushReplacementNamed(context, '/searchRestaurants'),
+        data: (_) => Navigator.pushReplacementNamed(context, '/home'),
         error: (error, _) => _showErrorOrSuccesMessage(context, 'Email ou mot de passe incorrect', true),
         loading: (){},
     );

@@ -24,7 +24,7 @@ AFTER DELETE ON restaurant_managers
 FOR EACH ROW
 EXECUTE FUNCTION restaurant_has_manager();
 
-
+/**
 -- TEST TRIGGER
 SELECT U.id as managerId , U.full_name,role, RM.restaurant FROM restaurant_managers AS RM
                                                                     JOIN users AS U
@@ -35,4 +35,4 @@ DELETE FROM restaurant_managers WHERE manager = 1;
 -- SUCCESS
 
 INSERT INTO restaurant_managers(restaurant,manager) VALUES(1,8);
-DELETE FROM restaurant_managers WHERE manager = 8;
+DELETE FROM restaurant_managers WHERE manager = 8; **/
