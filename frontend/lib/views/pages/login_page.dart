@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:prbd_2526_c01/core/tools/validating_text_editing_controller.dart';
 import 'package:prbd_2526_c01/core/widgets/dialog_box.dart';
+import 'package:prbd_2526_c01/providers/reference_time_provider.dart';
 import 'package:prbd_2526_c01/providers/security_provider.dart';
 
 import '../../models/user.dart';
@@ -35,7 +36,7 @@ class _LoginPageState extends ConsumerState<LoginPage>{
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final simulatedTime = DateTime(2024, 12, 4, 16, 0);
+    final now = ref.watch(referenceTimeProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -61,7 +62,7 @@ class _LoginPageState extends ConsumerState<LoginPage>{
                   message: 'Date/heure simulée utilisée pour les tests.\nCliquez pour modifier.',
                   child: Text(
                     DateFormat('EEEE dd/MM/yyyy HH:mm', 'fr_FR')
-                        .format(simulatedTime),
+                        .format(now),
                     style: TextStyle(
                       fontSize: 10,
                       color: Colors.grey[400],

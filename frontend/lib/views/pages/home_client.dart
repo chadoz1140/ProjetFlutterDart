@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:prbd_2526_c01/core/widgets/data_error_widget.dart';
 import 'package:prbd_2526_c01/models/reservation.dart';
+import 'package:prbd_2526_c01/providers/reference_time_provider.dart';
 import 'package:prbd_2526_c01/providers/reservations_provider.dart';
 import 'package:prbd_2526_c01/providers/security_provider.dart';
 
@@ -29,21 +31,22 @@ class _HomeClientState extends ConsumerState<HomeClient> {
     final asyncState = ref.watch(ReservationsProvider);
     final notifier = ref.read(ReservationsProvider.notifier);
     final theme = Theme.of(context);
+    final now = ref.watch(referenceTimeProvider);
 
 
     return asyncState.when(
-        data: (state) => data(state, notifier, theme),
+        data: (state) => data(state, notifier, theme, now),
         error: (err, _) => DataErrorWidget(
             error: err,
             stackTrace: StackTrace.current,
             notifier: notifier,
         ),
-        loading: () => data(asyncState.value ?? [], notifier, theme, isLoading: true),
+        loading: () => data(asyncState.value ?? [], notifier, theme, now, isLoading: true),
     );
   }
 
 
-  Widget data(List<Reservation> reservations, ReservationsNotifier notifier, ThemeData theme, {isLoading = false,}){
+  Widget data(List<Reservation> reservations, ReservationsNotifier notifier, ThemeData theme, DateTime now, {isLoading = false,}){
     return Scaffold(
       appBar: AppBar(
         title: const Text('Mes réservations'),
@@ -79,7 +82,7 @@ class _HomeClientState extends ConsumerState<HomeClient> {
               child: Tooltip(
                 message: 'Date/heure simulée utilisée pour les tests.\nCliquez pour modifier.',
                 child: Text(
-                  'mercredi 04/12/2024 16:00',
+                  DateFormat('EEEE dd/MM/yyyy HH:mm', 'fr_BE').format(now),
                   style: TextStyle(
                     fontSize: 10,
                     color: Colors.grey[400],
