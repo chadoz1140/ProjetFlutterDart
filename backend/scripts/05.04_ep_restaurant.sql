@@ -1,0 +1,68 @@
+/**************************************************************
+ Fonction qui permet de récupérer la liste de tous les restaurants
+ **************************************************************/
+
+drop function if exists get_restaurants(text, int);
+create or replace function get_restaurants(search_restaurant text, result_number int)
+
+    returns table (
+                      id int,
+                      name varchar(256),
+                      city varchar(256),
+                      rating double precision,
+                      last_reservation_datetime timestamp,
+                      pending_requests_count int
+    ) as
+$$
+declare search_like text;
+    begin
+    search_like := '%' || trim(search_restaurant) || '%';
+        perform auth.check_logged();
+
+        if (auth.role() != 'client') then
+            raise exception 'Access denied';
+        end if;
+
+        if(search_restaurant is null or trim(search_restaurant) = '') then
+            return query select rt.id, rt.name, rt.city, rt.rating, t.last_reservation_datetime, coalesce(t.pending_count, 0)::int as pending_count
+                         from restaurants rt
+                         left join (
+                             select rs.restaurant,
+                             max(rs.datetime) as last_reservation_datetime,
+                             sum(
+                                    case
+                                        when rs.status = 'pending' then 1
+                                        else 0
+                                    end
+                             ) as pending_count
+                             from reservations rs
+                             where rs.client = auth.id()
+                             group by rs.restaurant
+                         ) t on rt.id = t.restaurant
+                         order by rt.name asc
+                         limit result_number;
+        else
+            return query select rt.id, rt.name, rt.city, rt.rating, t.last_reservation_datetime, coalesce(t.pending_count, 0)::int as pending_count
+                         from restaurants rt
+                         left join (
+                            select rs.restaurant,
+                            max(rs.datetime) as last_reservation_datetime,
+                            sum(
+                                    case
+                                        when rs.status = 'pending' then 1
+                                        else 0
+                                    end
+                            ) as pending_count
+                            from reservations rs
+                            where rs.client = auth.id()
+                            group by rs.restaurant
+                        ) t on rt.id = t.restaurant
+                         where rt.name ilike search_like or rt.city ilike search_like or rt.description ilike search_like
+                         order by rt.name asc
+                         limit result_number;
+        end if;
+    end;
+$$language plpgsql security definer;
+
+grant execute on function get_restaurants(text, int) to authenticated;
+
