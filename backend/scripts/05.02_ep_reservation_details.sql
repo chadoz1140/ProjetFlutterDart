@@ -19,5 +19,5 @@ $$
 $$ language sql security definer;
 
 
-grant execute on function get_reservation_details(int) to anon;
+grant execute on function get_reservation_details(int) to anon
 
