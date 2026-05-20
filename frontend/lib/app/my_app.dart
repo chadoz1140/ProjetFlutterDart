@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:prbd_2526_c01/views/pages/home_client.dart';
+import 'package:prbd_2526_c01/views/pages/search_restaurants_page.dart';
 import 'package:prbd_2526_c01/views/pages/signup_page.dart';
 import '../providers/security_provider.dart';
 import '../views/pages/login_page.dart';
@@ -25,9 +26,10 @@ class MyApp extends ConsumerWidget{
       initialRoute: securityNotifier.isLoggedIn ? '/home' : '/login',
       routes: {
         '/login' : (context) => LoginPage(),
-        '/home' : (context) => HomeClient(),
         '/signup': (context) => SignupPage(),
         '/reservation_details': (context) => ReservationDetails(),
+        '/home' : (context) => HomeClient(),
+        '/searchRestaurants' : (context) => SearchRestaurantsPage(),
       },
     );
   }

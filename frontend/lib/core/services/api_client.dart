@@ -37,6 +37,12 @@ class ApiClient {
         bool anonymous = false,
       }) async {
     await Future.delayed(throttleDuration);
+    final token = Params.getValue('token');
+
+    print('API endpoint: $endpoint');
+    print('API token: $token');
+    print('API token parts: ${token == null ? 'null' : token.toString().split('.').length}');
+
     final Uri url = Uri.parse('$baseUrl/$endpoint');
     return await _client.post(
       url,

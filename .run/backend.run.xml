@@ -22,6 +22,9 @@
     <script-file value="$PROJECT_DIR$/backend/scripts/trigger_tables_restaurant_unmodifiable.sql" />
     <script-file value="$PROJECT_DIR$/backend/scripts/trigger_users_role_immutable.sql" />
     <script-file value="$PROJECT_DIR$/backend/scripts/05.01_ep_users.sql" />
+    <script-file value="$PROJECT_DIR$/backend/scripts/05.02_ep_reservations.sql" />
+    <script-file value="$PROJECT_DIR$/backend/scripts/05.03_ep_simulated_time.sql" />
+    <script-file value="$PROJECT_DIR$/backend/scripts/05.04_ep_restaurant.sql" />
     <script-mode>FILE</script-mode>
     <data-source id="6d275bb5-c69c-4f95-bc29-f6a29631655b" namespace="database/&quot;prbd-2526-c01&quot;" />
     <method v="2" />

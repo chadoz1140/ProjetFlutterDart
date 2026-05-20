@@ -1,0 +1,38 @@
+@baseUrl = http://localhost:3000/rpc
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiY2xpZW50Iiwic3ViIjoibWFtaWNoZWxAZXBmYy5ldSIsIm5hbWUiOiJNYXJjIiwidXNlcl9pZCI6NCwiZXhwIjoxNzc4Mzc1ODY2fQ.4MgXiTsPptuXVI4HPOz_ZupDsXMXEOz5M8irVQwETxA
+###
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "mamichel@epfc.eu",
+  "password": "Password1,"
+}
+
+<> 2026-05-08T013836.200.json
+<> 2026-05-08T013803.200.json
+<> 2026-05-08T005352.200.json
+<> 2026-05-07T230253.200.json
+<> 2026-05-07T230248.200.json
+<> 2026-05-07T213155.200.json
+
+
+### Test endpoint authenticated
+POST {{baseUrl}}/get_restaurants
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "search_restaurant": "gastro",
+  "result_number": 11
+}
+
+###
+POST {{baseUrl}}/get_restaurants
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "search_restaurant": "",
+  "result_number": 6
+}
