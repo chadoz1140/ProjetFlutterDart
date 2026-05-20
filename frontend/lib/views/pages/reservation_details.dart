@@ -46,7 +46,12 @@ class ReservationDetails extends ConsumerWidget {
         appBar: AppBar(
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
-            onPressed: () {},
+            onPressed: () {
+              Navigator.pushNamed(
+                  context,
+                  '/home'
+              );
+            },
           ),
           title: const Text('Détails de la réservation'),
           automaticallyImplyLeading: false,
@@ -54,7 +59,9 @@ class ReservationDetails extends ConsumerWidget {
             IconButton(
               icon: const Icon(Icons.refresh),
               tooltip: 'Rafraîchir les données',
-              onPressed: () {},
+              onPressed: () {
+                reservationNotifier.refresh();
+              },
             ),
           ],
           elevation: 2,
