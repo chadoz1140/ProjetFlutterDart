@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:prbd_2526_c01/models/reservation.dart';
 
+import '../../models/status.dart';
+
 class ReservationCard  extends ConsumerWidget{
 
   const ReservationCard({
@@ -80,28 +82,29 @@ class ReservationCard  extends ConsumerWidget{
 
   Widget _buildStatusIcon() {
     switch (reservation.status) {
-      case 'pending':
-        return Tooltip(
+      case Status.pending:
+        return const Tooltip(
           message: 'En attente',
-          child: const Icon(Icons.pending, size: 32, color: Colors.orange),
+          child: Icon(Icons.pending, size: 32, color: Colors.orange),
         );
-      case 'confirmed':
-        return Tooltip(
+
+      case Status.confirmed:
+        return const Tooltip(
           message: 'Confirmée',
-          child: const Icon(Icons.check_circle, size: 32, color: Colors.green),
+          child: Icon(Icons.check_circle, size: 32, color: Colors.green),
         );
-      case 'completed':
-        return Tooltip(
+
+      case Status.completed:
+        return const Tooltip(
           message: 'Terminée',
-          child: const Icon(Icons.event_available, size: 32, color: Colors.blue),
+          child: Icon(Icons.event_available, size: 32, color: Colors.blue),
         );
-      case 'cancelled':
-        return Tooltip(
+
+      case Status.cancelled:
+        return const Tooltip(
           message: 'Annulée',
-          child: const Icon(Icons.cancel, size: 32, color: Colors.red),
+          child: Icon(Icons.cancel, size: 32, color: Colors.red),
         );
-      default:
-        return const Icon(Icons.list, size: 24);
     }
   }
 
