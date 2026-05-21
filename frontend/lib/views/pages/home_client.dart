@@ -7,7 +7,7 @@ import 'package:prbd_2526_c01/providers/reference_time_provider.dart';
 import 'package:prbd_2526_c01/providers/reservations_provider.dart';
 import 'package:prbd_2526_c01/providers/security_provider.dart';
 
-import '../../core/widgets/reservation_card.dart';
+import '../widgets/reservation_card.dart';
 
 class HomeClient extends ConsumerStatefulWidget{
   const HomeClient({super.key});

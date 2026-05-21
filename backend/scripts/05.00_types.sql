@@ -1,3 +1,10 @@
+drop type if exists system_time_info cascade;
+
+create type system_time_info as
+(
+    simulated_time timestamp
+);
+
 drop type if exists table_info cascade;
 
 create type table_info as

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../core/tools/abstract_async_notifier.dart';
+import '../tools/abstract_async_notifier.dart';
 
 class DataErrorWidget extends StatelessWidget {
   final Object error;

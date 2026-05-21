@@ -1,54 +1,24 @@
 
-DROP FUNCTION IF EXISTS public.get_reservations(status_type);
+drop function if exists get_reservations(status_type);
 
-CREATE OR REPLACE FUNCTION get_reservations(p_status status_type DEFAULT NULL) RETURNS jsonb AS
+create or replace function get_reservations(p_status status_type default null)
+    returns setof reservation_details as
+
 $$
-BEGIN
-    PERFORM auth.check_logged();
-    RETURN (
-        SELECT COALESCE(
-                       jsonb_agg(
-                               jsonb_build_object(
-                                       'id', r.id,
-                                       'client', (
-                                           SELECT jsonb_build_object(
-                                                          'id', u.id,
-                                                          'email', u.email,
-                                                          'password', u.password,
-                                                          'full_name', u.full_name,
-                                                          'role', u.role,
-                                                          'phone', u.phone
-                                                  )
-                                           FROM users u
-                                           WHERE u.id = r.client
-                                       ),
-                                       'datetime', r.datetime,
-                                       'number_of_guests', r.number_of_guests,
-                                       'status', r.status,
-                                       'special_requests', r.special_requests,
-                                       'restaurant', (
-                                           SELECT jsonb_build_object(
-                                                          'id', res.id,
-                                                          'name', res.name,
-                                                          'city', res.city,
-                                                          'phone', res.phone,
-                                                          'rating', res.rating
+select row(
+           r.id,
+           r.datetime,
+           r.number_of_guests,
+           r.status,
+           r.special_requests,
+           get_client_info(r.client),
+           get_restaurant_info(r.restaurant)
+           )::reservation_details
+from reservations r
+where (auth.role() = 'admin' or r.client =(select id from  users us where us.email = auth.email())) and
+    (p_status is null or r.status = p_status)
+order by r.datetime desc;
 
-                                                  )
-                                           FROM restaurants res
-                                           WHERE res.id = r.restaurant
-                                       )
-                               )
-                               ORDER BY r.datetime DESC
-                       ),
-                       '[]'::jsonb
-               )
-        FROM reservations r
-        WHERE (auth.role() = 'admin' OR r.client = (SELECT id FROM users us WHERE us.email = auth.email()))
-          AND (p_status IS NULL OR r.status = p_status)
-    );
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ language sql security definer;
 
-GRANT EXECUTE ON FUNCTION get_reservations(status_type) TO authenticated;
-
+grant execute on function get_reservations(status_type) to authenticated;
