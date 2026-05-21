@@ -1,3 +1,5 @@
+drop function if exists get_table_info_by_restaurant_id(restaurant_id int);
+
 create or replace function get_table_info_by_restaurant_id(restaurant_id int)
     returns table_info[] as
 $$

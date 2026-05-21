@@ -1,3 +1,5 @@
+drop function if exists get_client_info(client_id int);
+
 create or replace function get_client_info(client_id int)
     returns client_info as
 $$
