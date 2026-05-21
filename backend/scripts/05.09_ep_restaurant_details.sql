@@ -1,3 +1,5 @@
+drop function if exists get_restaurant_details(restaurant_id int);
+
 create or replace function get_restaurant_details(restaurant_id int)
     returns restaurant_details as
 $$

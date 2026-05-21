@@ -1,3 +1,5 @@
+drop function if exists get_reservation_details(reservation_id int);
+
 create or replace function get_reservation_details(reservation_id int)
     returns reservation_details as
 $$
@@ -6,7 +8,6 @@ $$
     from reservations r
     where r.id = reservation_id;
 $$ language sql security definer;
-
 
 grant execute on function get_reservation_details(int) to anon
 
