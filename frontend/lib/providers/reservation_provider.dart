@@ -17,7 +17,7 @@ class ReservationNotifier extends AbstractAsyncNotifier<Reservation> {
   Future<Reservation> build() async{
     ref.watch(securityProvider);
     try{
-      state = AsyncLoading();
+
       return await Reservation.getReservation(reservationId);
     }
     catch (e) {

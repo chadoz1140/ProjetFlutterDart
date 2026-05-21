@@ -1,16 +1,3 @@
-create type restaurant_info as
-(
-    id int,
-    name text,
-    address text,
-    city text,
-    phone text,
-    description text,
-    rating double precision,
-    price_range int,
-    slot_duration int
-);
-
 create or replace function get_restaurant_info(restaurant_id int)
     returns restaurant_info as
 $$

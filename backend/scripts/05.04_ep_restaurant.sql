@@ -9,6 +9,7 @@ create or replace function get_restaurants(search_restaurant text, result_number
                       id int,
                       name varchar(256),
                       city varchar(256),
+                      phone varchar(256),
                       rating double precision,
                       last_reservation_datetime timestamp,
                       pending_requests_count int
@@ -24,7 +25,7 @@ declare search_like text;
         end if;
 
         if(search_restaurant is null or trim(search_restaurant) = '') then
-            return query select rt.id, rt.name, rt.city, rt.rating, t.last_reservation_datetime, coalesce(t.pending_count, 0)::int as pending_count
+            return query select rt.id, rt.name, rt.city, rt.phone, rt.rating, t.last_reservation_datetime, coalesce(t.pending_count, 0)::int as pending_count
                          from restaurants rt
                          left join (
                              select rs.restaurant,
@@ -42,7 +43,7 @@ declare search_like text;
                          order by rt.name asc
                          limit result_number;
         else
-            return query select rt.id, rt.name, rt.city, rt.rating, t.last_reservation_datetime, coalesce(t.pending_count, 0)::int as pending_count
+            return query select rt.id, rt.name, rt.city, rt.phone, rt.rating, t.last_reservation_datetime, coalesce(t.pending_count, 0)::int as pending_count
                          from restaurants rt
                          left join (
                             select rs.restaurant,

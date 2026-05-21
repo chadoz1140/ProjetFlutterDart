@@ -41,7 +41,7 @@ class Reservation{
     final response = await ApiClient.post(
       'get_reservation_details',
       body: json.encode({'reservation_id': reservationId}),
-      anonymous: true,
+
     );
     if (response.statusCode == 200) {
       return Reservation.fromJson(json.decode(response.body));

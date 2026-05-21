@@ -1,14 +1,3 @@
-create type reservation_details as
-(
-    id integer,
-    datetime timestamp,
-    number_of_guests int,
-    status status_type,
-    special_requests text,
-    client client_info,
-    restaurant restaurant_info
-);
-
 create or replace function get_reservation_details(reservation_id int)
     returns reservation_details as
 $$

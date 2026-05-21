@@ -1,13 +1,3 @@
-create type client_info as
-(
-    id int,
-    email text,
-    password text,
-    full_name text,
-    role role_type,
-    phone text
-);
-
 create or replace function get_client_info(client_id int)
     returns client_info as
 $$
