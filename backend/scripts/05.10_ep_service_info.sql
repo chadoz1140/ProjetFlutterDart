@@ -1,12 +1,3 @@
-create type service_info as
-(
-    id int,
-    restaurant int,
-    day_of_week int,
-    start_time time,
-    end_time time
-);
-
 create or replace function get_service_info_by_restaurant_id(restaurant_id int)
     returns service_info[] as
 $$

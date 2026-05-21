@@ -1,18 +1,3 @@
-create type restaurant_details as
-(
-    id int,
-    name text,
-    address text,
-    city text,
-    phone text,
-    description text,
-    rating double precision,
-    price_range int,
-    slot_duration int,
-    tables table_info[],
-    services service_info[]
-);
-
 create or replace function get_restaurant_details(restaurant_id int)
     returns restaurant_details as
 $$
