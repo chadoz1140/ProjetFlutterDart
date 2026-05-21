@@ -4,13 +4,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:prbd_2526_c01/models/reservation.dart';
 
+import '../../models/status.dart';
+
 class ReservationCard  extends ConsumerWidget{
 
   const ReservationCard({
     super.key,
     required this.reservation,
     this.onTap
-});
+  });
 
   final Reservation reservation;
   final VoidCallback? onTap;
@@ -31,7 +33,7 @@ class ReservationCard  extends ConsumerWidget{
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      reservation.restaurantName,
+                      reservation.restaurant.name,
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -43,7 +45,7 @@ class ReservationCard  extends ConsumerWidget{
                         const Icon(Icons.location_on, size: 14),
                         const SizedBox(width: 4),
                         Text(
-                          reservation.restaurantCity,
+                          reservation.restaurant.city,
                           style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                         ),
                       ],
@@ -54,14 +56,14 @@ class ReservationCard  extends ConsumerWidget{
                         const Icon(Icons.access_time, size: 16),
                         const SizedBox(width: 4),
                         Text(
-                          _formatDate(reservation.datetime),
+                          _formatDate(reservation.dateTime),
                           style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                         ),
                         const SizedBox(width: 12),
                         const Icon(Icons.people, size: 16),
                         const SizedBox(width: 4),
                         Text(
-                          '${reservation.number_of_guests} convives',
+                          '${reservation.numberOfGuests} convives',
                           style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                         ),
                       ],
@@ -80,33 +82,33 @@ class ReservationCard  extends ConsumerWidget{
 
   Widget _buildStatusIcon() {
     switch (reservation.status) {
-      case 'pending':
-        return Tooltip(
+      case Status.pending:
+        return const Tooltip(
           message: 'En attente',
-          child: const Icon(Icons.pending, size: 32, color: Colors.orange),
+          child: Icon(Icons.pending, size: 32, color: Colors.orange),
         );
-      case 'confirmed':
-        return Tooltip(
+
+      case Status.confirmed:
+        return const Tooltip(
           message: 'Confirmée',
-          child: const Icon(Icons.check_circle, size: 32, color: Colors.green),
+          child: Icon(Icons.check_circle, size: 32, color: Colors.green),
         );
-      case 'completed':
-        return Tooltip(
+
+      case Status.completed:
+        return const Tooltip(
           message: 'Terminée',
-          child: const Icon(Icons.event_available, size: 32, color: Colors.blue),
+          child: Icon(Icons.event_available, size: 32, color: Colors.blue),
         );
-      case 'cancelled':
-        return Tooltip(
+
+      case Status.cancelled:
+        return const Tooltip(
           message: 'Annulée',
-          child: const Icon(Icons.cancel, size: 32, color: Colors.red),
+          child: Icon(Icons.cancel, size: 32, color: Colors.red),
         );
-      default:
-        return const Icon(Icons.list, size: 24);
     }
   }
 
-  String _formatDate(String datetime) {
-    final date = DateTime.parse(datetime);
-    return DateFormat("EEE dd/MM/yyyy 'à' HH:mm", 'fr_FR').format(date);
+  String _formatDate(DateTime dateTime) {
+    return DateFormat("EEE dd/MM/yyyy 'à' HH:mm", 'fr_FR').format(dateTime);
   }
 }

@@ -7,14 +7,16 @@ class Restaurant {
   final int id;
   final String name;
   final String city;
+  final String phone;
   final double? rating;
   final DateTime? lastReservationDatetime;
-  final int pendingCount;
+  final int? pendingCount;
 
   Restaurant({
     required this.id,
     required this.name,
     required this.city,
+    required this.phone,
     required this.rating,
     required this.lastReservationDatetime,
     required this.pendingCount,
@@ -31,6 +33,7 @@ class Restaurant {
       id: json['id'],
       name: json['name'],
       city: json['city'],
+      phone: json['phone'],
       rating: json['rating'] == null ? null : (json['rating'] as num).toDouble(),
       lastReservationDatetime: json['last_reservation_datetime'] == null
           ? null
@@ -53,9 +56,4 @@ class Restaurant {
     final List<dynamic> data = json.decode(response.body);
     return data.map((dynamic item) => Restaurant.fromJson(item)).toList();
   }
-
-
-
-
-
 }

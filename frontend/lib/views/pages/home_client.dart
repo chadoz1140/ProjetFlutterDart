@@ -153,7 +153,17 @@ class _HomeClientState extends ConsumerState<HomeClient> {
                     for (var reservation in reservations)
                       ReservationCard(
                         reservation: reservation,
-                        onTap: () {},
+                        onTap: () {
+                          Navigator.pushNamed(
+                            context,
+                            '/reservation_details',
+                            arguments: reservation.id
+                            //                 pour afficher la page reservation_details sinon elle ne s'affiche pas
+                            //arguments: reservationId
+                            // après << arguments: >> on met l'id de la reservation,
+                            // pour afficher la page reservation_details
+                          );
+                        },
                       ),
                     ],
                   ),
@@ -168,6 +178,5 @@ class _HomeClientState extends ConsumerState<HomeClient> {
           ),
         );
   }
-
 
 }

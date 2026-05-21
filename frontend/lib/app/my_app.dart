@@ -8,6 +8,7 @@ import 'package:prbd_2526_c01/views/pages/search_restaurants_page.dart';
 import 'package:prbd_2526_c01/views/pages/signup_page.dart';
 import '../providers/security_provider.dart';
 import '../views/pages/login_page.dart';
+import '../views/pages/reservation_details.dart';
 
 class MyApp extends ConsumerWidget{
   const MyApp({super.key});
@@ -26,6 +27,7 @@ class MyApp extends ConsumerWidget{
       routes: {
         '/login' : (context) => LoginPage(),
         '/signup': (context) => SignupPage(),
+        '/reservation_details': (context) => ReservationDetails(),
         '/home' : (context) => HomeClient(),
         '/searchRestaurants' : (context) => SearchRestaurantsPage(),
       },
