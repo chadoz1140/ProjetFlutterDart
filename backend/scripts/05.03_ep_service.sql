@@ -11,3 +11,5 @@ $$
                    order by s.day_of_week);
 
 $$language sql security definer;
+
+grant execute on function get_service_info_by_restaurant_id(int) to authenticated;

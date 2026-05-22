@@ -1,23 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 import 'package:prbd_2526_c01/providers/reservation_provider.dart';
 import '../../core/widgets/data_error_widget.dart';
-
-/*void main() async {
-  await initializeDateFormatting('fr_FR', null);
-  runApp(
-    MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-        useMaterial3: true,
-      ),
-      home: const ReservationDetails(),
-    ),
-  );
-}*/
 
 class ReservationDetails extends ConsumerWidget {
 

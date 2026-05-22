@@ -28,6 +28,9 @@ where r.id = restaurant_id
 
 $$language sql security definer;
 
+grant execute on function get_restaurant_details(int) to authenticated;
+
+
 /**************************************************************
  Fonction qui permet de récupérer la liste de tous les restaurants
  **************************************************************/

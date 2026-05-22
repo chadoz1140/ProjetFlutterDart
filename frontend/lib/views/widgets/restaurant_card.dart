@@ -81,7 +81,7 @@ class RestaurantCard extends StatelessWidget{
         ),
         trailing: const Icon(Icons.chevron_right),
         onTap: () {
-          Navigator.pushReplacementNamed(context, '/test');
+          Navigator.pushReplacementNamed(context, '/restaurant_details', arguments: restaurant.id,);
         },
       ),
     );

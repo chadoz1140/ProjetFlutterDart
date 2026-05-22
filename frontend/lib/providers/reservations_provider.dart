@@ -42,7 +42,9 @@ class ReservationsNotifier extends AbstractAsyncNotifier<List<Reservation>> {
       final reservations = await Reservation.getReservations(status: status);
       state = AsyncValue.data(reservations);
     }catch(e, stackTrace) {
-      state = AsyncValue.error(e, stackTrace);
+      state = AsyncValue.error(
+          "Something went wrong loading reservations!\n Please try again later?",
+          stackTrace);
     }
   }
 
