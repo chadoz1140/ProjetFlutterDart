@@ -1,3 +1,4 @@
+/** Récupère les informations de base des tables d'un restaurant  **/
 drop function if exists get_table_info_by_restaurant_id(restaurant_id int);
 
 create or replace function get_table_info_by_restaurant_id(restaurant_id int)

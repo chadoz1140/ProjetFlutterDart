@@ -1,3 +1,15 @@
+/** Get user info **/
+drop function if exists get_client_info(client_id int);
+
+create or replace function get_client_info(client_id int)
+    returns client_info as
+$$
+select row (id, email, password, full_name, role, phone)::client_info
+from users as u
+where u.id = client_id
+
+$$language sql security definer;
+
 /**************************************************************
  Fonction qui permet de vérifier si un full_name est disponible
  **************************************************************/

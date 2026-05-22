@@ -1,3 +1,4 @@
+/** Récupère les informations de base d'un service **/
 drop function if exists get_service_info_by_restaurant_id(restaurant_id int);
 
 create or replace function get_service_info_by_restaurant_id(restaurant_id int)

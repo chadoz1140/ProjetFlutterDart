@@ -1,3 +1,33 @@
+
+/** Récupère les informations de base d'un restaurant **/
+
+drop function if exists get_restaurant_info(restaurant_id int);
+
+create or replace function get_restaurant_info(restaurant_id int)
+    returns restaurant_info as
+$$
+select row (id, name, address, city, phone, description, rating, price_range, slot_duration)::restaurant_info
+from restaurants as r
+where r.id = restaurant_id
+
+$$language sql security definer;
+
+/** Récupère les informations complètes d'un restaurant avec ses tables et services **/
+
+drop function if exists get_restaurant_details(restaurant_id int);
+
+create or replace function get_restaurant_details(restaurant_id int)
+    returns restaurant_details as
+$$
+select row (r.id, r.name, r.address, r.city, r.phone,
+           r.description, r.rating, r.price_range, r.slot_duration,
+           get_table_info_by_restaurant_id(restaurant_id),
+           get_service_info_by_restaurant_id(restaurant_id))::restaurant_details
+from restaurants as r
+where r.id = restaurant_id
+
+$$language sql security definer;
+
 /**************************************************************
  Fonction qui permet de récupérer la liste de tous les restaurants
  **************************************************************/
