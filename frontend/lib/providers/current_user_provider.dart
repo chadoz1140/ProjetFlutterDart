@@ -5,11 +5,11 @@ import 'package:prbd_2526_c01/core/tools/params.dart';
 import 'package:prbd_2526_c01/models/security.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 
-final securityProvider = AsyncNotifierProvider<SecurityNotifier, String?>(
-      () => SecurityNotifier(),
+final currentUserProvider = AsyncNotifierProvider<CurrentUserNotifier, String?>(
+      () => CurrentUserNotifier(),
 );
 
-class SecurityNotifier extends AsyncNotifier<String?> {
+class CurrentUserNotifier extends AsyncNotifier<String?> {
   @override
   Future<String?> build() async {
     state = AsyncData(Params.getValue('token'));

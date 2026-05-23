@@ -26,6 +26,7 @@ class Reservation{
   });
 
   factory Reservation.fromJson(Map<String, dynamic> json) {
+    print('RESERVATION JSON: $json');
     return Reservation(
       id: json['id'],
       client: User.fromJson(json['client']),
@@ -51,10 +52,10 @@ class Reservation{
     }
   }
 
-  static Future<List<Reservation>> getReservations({String? status}) async {
+  static Future<List<Reservation>> getReservations({Status? status}) async {
       final response = await ApiClient.post(
           'get_reservations',
-           body: json.encode({'p_status': status}),
+           body: json.encode({'p_status': status?.value}),
       );
       if(response.statusCode != 200) {
         throw Exception("Failed to get reservations");

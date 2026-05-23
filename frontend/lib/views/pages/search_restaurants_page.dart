@@ -4,9 +4,10 @@ import 'package:intl/intl.dart';
 import 'package:prbd_2526_c01/core/tools/debounce.dart';
 import 'package:prbd_2526_c01/core/widgets/data_error_widget.dart';
 import 'package:prbd_2526_c01/models/client_search_restaurant_state.dart';
+import 'package:prbd_2526_c01/models/client_state.dart';
+import 'package:prbd_2526_c01/providers/client_state_provider.dart';
 import 'package:prbd_2526_c01/providers/reference_time_provider.dart';
 import 'package:prbd_2526_c01/views/widgets/restaurant_card.dart';
-import '../../providers/client_search_restaurant_provider.dart';
 
 class SearchRestaurantsPage extends ConsumerStatefulWidget{
   @override
@@ -21,7 +22,7 @@ class _SearchRestaurantsPageState extends ConsumerState<SearchRestaurantsPage>{
   void initState() {
     super.initState();
     _searchController = TextEditingController(
-      text: ref.read(restaurantProvider).asData?.value.searchText ?? '',
+      text: ref.read(clientStateProvider).asData?.value.searchText ?? '',
     );
   }
 
@@ -29,16 +30,16 @@ class _SearchRestaurantsPageState extends ConsumerState<SearchRestaurantsPage>{
   Widget build(BuildContext context) {
 
     final theme = Theme.of(context);
-    final asyncState = ref.watch(restaurantProvider);
-    final notifier = ref.read(restaurantProvider.notifier);
+    final clientState = ref.watch(clientStateProvider);
+    final clientNotifier = ref.read(clientStateProvider.notifier);
 
-    return asyncState.when(
-        data: (state) => data(theme, state, notifier),
-        error: (err, stackTrace) => DataErrorWidget(error: err, stackTrace: stackTrace, notifier: notifier),
+    return clientState.when(
+        data: (state) => data(theme, state, clientNotifier),
+        error: (err, stackTrace) => DataErrorWidget(error: err, stackTrace: stackTrace, notifier: clientNotifier),
         loading: () => data (
           theme,
-          ClientSearchRestaurantState(searchText: '', restaurants: [], hasMoreResults: false),
-          notifier,
+          clientState.value ?? ClientState(),
+          clientNotifier,
           isLoading: true,
         )
     );
@@ -46,8 +47,8 @@ class _SearchRestaurantsPageState extends ConsumerState<SearchRestaurantsPage>{
 
   Widget data(
       ThemeData theme,
-      ClientSearchRestaurantState state,
-      ClientSearchRestaurantNotifier notifier,
+      ClientState state,
+      ClientStateNotifier notifier,
       {isLoading = false}
       ){
     final restaurants = state.restaurants;
@@ -152,30 +153,31 @@ class _SearchRestaurantsPageState extends ConsumerState<SearchRestaurantsPage>{
                     ),
 
                   Expanded(
-                    child: restaurants.isEmpty ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.restaurant,
-                            size: 80,
-                            color: Colors.grey[400],
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'Aucun restaurant disponible',
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: Colors.grey[600],
+                    child: state.restaurants.isEmpty
+                      ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.restaurant,
+                              size: 80,
+                              color: Colors.grey[400],
                             ),
-                          ),
-                        ],
-                      ),
-                    )
+                            const SizedBox(height: 16),
+                            Text(
+                              'Aucun restaurant disponible',
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
                     : ListView(
                       padding: const EdgeInsets.all(16.0),
                       children: [
-                        for(var restaurant in restaurants)
+                        for(var restaurant in state.restaurants)
                           RestaurantCard(restaurant: restaurant)
                       ],
                     ),
@@ -197,7 +199,7 @@ class _SearchRestaurantsPageState extends ConsumerState<SearchRestaurantsPage>{
   }
 
   void _refresh() async{
-    await ref.read(restaurantProvider.notifier).refresh();
+    await ref.read(clientStateProvider.notifier).refreshRestaurants();
     _searchController.dispose();
     _debouncer.cancel();
     _searchController = TextEditingController(text: '');

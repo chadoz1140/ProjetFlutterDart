@@ -6,7 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:prbd_2526_c01/views/pages/home_client.dart';
 import 'package:prbd_2526_c01/views/pages/search_restaurants_page.dart';
 import 'package:prbd_2526_c01/views/pages/signup_page.dart';
-import '../providers/security_provider.dart';
+import '../providers/current_user_provider.dart';
 import '../views/pages/login_page.dart';
 import '../views/pages/reservation_details.dart';
 import '../views/pages/restaurant_details.dart';
@@ -16,7 +16,7 @@ class MyApp extends ConsumerWidget{
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final securityNotifier = ref.read(securityProvider.notifier);
+    final securityNotifier = ref.read(currentUserProvider.notifier);
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Namer App',

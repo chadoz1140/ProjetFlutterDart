@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:prbd_2526_c01/core/widgets/data.error.widget.dart';
 import 'package:prbd_2526_c01/models/service.dart';
+import 'package:prbd_2526_c01/providers/client_state_provider.dart';
 import 'package:prbd_2526_c01/providers/reference_time_provider.dart';
-import 'package:prbd_2526_c01/providers/restaurant_provider.dart';
 
 class RestaurantDetails extends ConsumerStatefulWidget {
   const RestaurantDetails({super.key});
@@ -19,28 +19,29 @@ class RestaurantDetailsState extends ConsumerState<RestaurantDetails> {
     super.initState();
     Future.microtask(() {
       final restaurantId = ModalRoute.of(context)!.settings.arguments as int;
-      ref.read(restaurantDetailsProvider.notifier).getRestaurantDetails(restaurantId);
+      ref.read(clientStateProvider.notifier).getRestaurantDetails(restaurantId);
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final restaurantState = ref.watch(restaurantDetailsProvider);
-    final restaurantNotifier = ref.read(restaurantDetailsProvider.notifier);
+    final clientState = ref.watch(clientStateProvider);
+    final clientNotifier = ref.read(clientStateProvider.notifier);
     final now = ref.watch(referenceTimeProvider);
     const List<String> days = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
     final theme = Theme.of(context);
 
-    return restaurantState.when(
+    return clientState.when(
       error: (err, _) => DataErrorWidget(
         error: err,
         stackTrace: StackTrace.current,
-        notifier: restaurantNotifier,
+        notifier: clientNotifier,
       ),
       loading: () => const Scaffold(
         body: Center(child: CircularProgressIndicator()),
       ),
-      data: (restaurant) {
+      data: (state) {
+        final restaurant = state.currentRestaurant;
         if (restaurant == null) {
           return const Scaffold(
             body: Center(child: CircularProgressIndicator()),
@@ -65,7 +66,7 @@ class RestaurantDetailsState extends ConsumerState<RestaurantDetails> {
               IconButton(
                 icon: const Icon(Icons.refresh),
                 tooltip: 'Rafraîchir les données',
-                onPressed: () => restaurantNotifier.refresh(),
+                onPressed: () => clientNotifier.refreshRestaurantDetails(),
               ),
             ],
             elevation: 2,

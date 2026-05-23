@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:prbd_2526_c01/core/tools/validating_text_editing_controller.dart';
 import 'package:prbd_2526_c01/core/widgets/dialog_box.dart';
 import 'package:prbd_2526_c01/providers/reference_time_provider.dart';
-import 'package:prbd_2526_c01/providers/security_provider.dart';
+import 'package:prbd_2526_c01/providers/current_user_provider.dart';
 
 import '../../models/user.dart';
 
@@ -293,8 +293,8 @@ class _LoginPageState extends ConsumerState<LoginPage>{
   }
 
   void _login(BuildContext context, String email, String password) async{
-    await ref.read(securityProvider.notifier).login(email, password);
-    var securityState = ref.read(securityProvider);
+    await ref.read(currentUserProvider.notifier).login(email, password);
+    var securityState = ref.read(currentUserProvider);
 
     if(!context.mounted) return;
     securityState.when(
@@ -313,9 +313,9 @@ class _LoginPageState extends ConsumerState<LoginPage>{
     ).show(context);
     if(result != 'Réinitialiser') return;
 
-    await ref.read(securityProvider.notifier).resetDatabase();
+    await ref.read(currentUserProvider.notifier).resetDatabase();
     if (!context.mounted) return;
-    var securityState = ref.read(securityProvider);
+    var securityState = ref.read(currentUserProvider);
 
     securityState.when(
         data: (_) => _showErrorOrSuccesMessage(context, 'Base de données réinitialisée', false),

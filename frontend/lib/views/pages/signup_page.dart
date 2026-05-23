@@ -3,7 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:prbd_2526_c01/providers/security_provider.dart';
+import 'package:prbd_2526_c01/providers/current_user_provider.dart';
 import 'package:prbd_2526_c01/models/user.dart';
 import 'package:prbd_2526_c01/core/tools/validating_text_editing_controller.dart';
 
@@ -69,7 +69,7 @@ class _SignupPageState extends ConsumerState<SignupPage> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () {},
+          onPressed: () => Navigator.pushReplacementNamed(context, '/login'),
         ),
         title: const Text('Inscription'),
         automaticallyImplyLeading: false,
@@ -220,7 +220,7 @@ class _SignupPageState extends ConsumerState<SignupPage> {
 
   Future<void> _submitForm(BuildContext context) async {
     if (!await _validateForm()) return;
-    await ref.read(securityProvider.notifier).signup(
+    await ref.read(currentUserProvider.notifier).signup(
         email: _emailController.text,
         fullName: _fullNameController.text.trim(),
         password: _passwordController.text,

@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:prbd_2526_c01/core/widgets/data_error_widget.dart';
-import 'package:prbd_2526_c01/models/reservation.dart';
+import 'package:prbd_2526_c01/models/status.dart';
+import 'package:prbd_2526_c01/providers/client_state_provider.dart';
 import 'package:prbd_2526_c01/providers/reference_time_provider.dart';
-import 'package:prbd_2526_c01/providers/reservations_provider.dart';
-import 'package:prbd_2526_c01/providers/security_provider.dart';
+import 'package:prbd_2526_c01/providers/current_user_provider.dart';
 
+import '../../models/client_state.dart';
 import '../widgets/reservation_card.dart';
 
 class HomeClient extends ConsumerStatefulWidget{
@@ -19,34 +20,34 @@ class HomeClient extends ConsumerStatefulWidget{
 
 class _HomeClientState extends ConsumerState<HomeClient> {
 
-  String _selectedStatus = 'all';
+  Status? _selectedStatus = null;
 
   void _logout() {
-    ref.read(securityProvider.notifier).logout();
+    ref.read(currentUserProvider.notifier).logout();
     Navigator.pushReplacementNamed(context, '/login');
   }
 
   @override
   Widget build(BuildContext context) {
-    final asyncState = ref.watch(ReservationsProvider);
-    final notifier = ref.read(ReservationsProvider.notifier);
+    final clientState = ref.watch(clientStateProvider);
+    final clientNotifier = ref.read(clientStateProvider.notifier);
     final theme = Theme.of(context);
     final now = ref.watch(referenceTimeProvider);
 
 
-    return asyncState.when(
-        data: (state) => data(state, notifier, theme, now),
+    return clientState.when(
+        data: (state) => data(state, clientNotifier, theme, now),
         error: (err, _) => DataErrorWidget(
             error: err,
             stackTrace: StackTrace.current,
-            notifier: notifier,
+            notifier: clientNotifier,
         ),
-        loading: () => data(asyncState.value ?? [], notifier, theme, now, isLoading: true),
+        loading: () => data(clientState.value ?? ClientState(), clientNotifier, theme, now, isLoading: true),
     );
   }
 
 
-  Widget data(List<Reservation> reservations, ReservationsNotifier notifier, ThemeData theme, DateTime now, {isLoading = false,}){
+  Widget data(ClientState state, ClientStateNotifier notifier, ThemeData theme, DateTime now, {isLoading = false,}){
     return Scaffold(
       appBar: AppBar(
         title: const Text('Mes réservations'),
@@ -60,7 +61,7 @@ class _HomeClientState extends ConsumerState<HomeClient> {
             icon: const Icon(Icons.refresh),
             tooltip: 'Rafraîchir les données',
             onPressed: () {
-              setState(() => _selectedStatus = 'all');
+              setState(() => _selectedStatus = null);
               notifier.refresh();
             },
           ),
@@ -99,39 +100,39 @@ class _HomeClientState extends ConsumerState<HomeClient> {
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 0),
-              child: SegmentedButton<String>(
+              child: SegmentedButton<Status?>(
                 showSelectedIcon: false,
                 segments: const [
                   ButtonSegment(
-                    value: 'all',
+                    value: null,
                     icon: Icon(Icons.list, size: 24),
                     tooltip: 'Toutes',
                   ),
                   ButtonSegment(
-                    value: 'pending',
+                    value: Status.pending,
                     icon: Icon(Icons.pending, size: 24, color: Colors.orange),
                     tooltip: 'En attente',
                   ),
                   ButtonSegment(
-                    value: 'confirmed',
+                    value: Status.confirmed,
                     icon: Icon(Icons.check_circle, size: 24, color: Colors.green),
                     tooltip: 'Confirmées',
                   ),
                   ButtonSegment(
-                    value: 'completed',
+                    value: Status.completed,
                     icon: Icon(Icons.event_available, size: 24, color: Colors.blue),
                     tooltip: 'Terminées',
                   ),
                   ButtonSegment(
-                    value: 'cancelled',
+                    value: Status.cancelled,
                     icon: Icon(Icons.cancel, size: 24, color: Colors.red),
                     tooltip: 'Annulées',
                   ),
                 ],
                 selected: {_selectedStatus},
                 onSelectionChanged: (selection) {
-                    setState( () => _selectedStatus = selection.first);
-                    final status = selection.first == 'all' ? null : selection.first;
+                    final status = selection.first;
+                    setState( () => _selectedStatus = status);
                     notifier.getReservations(status);
                 },
               ),
@@ -139,7 +140,7 @@ class _HomeClientState extends ConsumerState<HomeClient> {
             const SizedBox(height: 8),
             if(isLoading)
               const Expanded(child: Center(child: CircularProgressIndicator()))
-            else if(reservations.isEmpty)
+            else if(state.reservations.isEmpty)
               const Expanded(
                 child: Center(
                   child: Text('Aucune réservation.'),
@@ -150,7 +151,7 @@ class _HomeClientState extends ConsumerState<HomeClient> {
                 child: ListView(
                   padding: const EdgeInsets.all(16.0),
                   children: [
-                    for (var reservation in reservations)
+                    for (var reservation in state.reservations)
                       ReservationCard(
                         reservation: reservation,
                         onTap: () {
