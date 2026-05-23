@@ -15,7 +15,7 @@ class RestaurantDetails extends ConsumerStatefulWidget {
 class RestaurantDetailsState extends ConsumerState<RestaurantDetails> {
 
   @override
-  void initState() {
+  void initState(){
     super.initState();
     Future.microtask(() {
       final restaurantId = ModalRoute.of(context)!.settings.arguments as int;
@@ -57,7 +57,7 @@ class RestaurantDetailsState extends ConsumerState<RestaurantDetails> {
           appBar: AppBar(
             leading: IconButton(
               icon: const Icon(Icons.arrow_back),
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.pushReplacementNamed(context, '/searchRestaurants')
             ),
             title: const Text('Détails du restaurant'),
             automaticallyImplyLeading: false,

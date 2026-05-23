@@ -12,25 +12,32 @@ CREATE OR REPLACE FUNCTION check_table_reservation_conflict()
         r_restaurant INT;
         r_conflict   INT;
     BEGIN
-        SELECT "datetime", restaurant INTO r_datetime, r_restaurant FROM reservations WHERE id = NEW.reservation;
 
+        SELECT datetime, restaurant INTO r_datetime, r_restaurant FROM reservations WHERE id = NEW.reservation;
+        -- Récupérer les réservations du même restaurant, du même créneau et de la même table.
         SELECT COUNT(*) INTO r_conflict
         FROM reservation_tables rt
-                 JOIN reservations r ON r.id = rt.reservation
-                 JOIN services s1 ON s1.restaurant = r_restaurant
-                 JOIN services s2 ON s2.restaurant = r.restaurant
+                 INNER JOIN reservations r ON rt.reservation = r.id
+                 INNER JOIN services s  ON s.restaurant = r.restaurant
         WHERE rt.table = NEW.table
-          AND rt.reservation <> NEW.reservation
+          AND r.id != NEW.reservation
           AND r.status IN ('confirmed', 'completed')
-          AND DATE(r.datetime) = DATE(r_datetime)
-          AND s1.id = (
-            SELECT id FROM services
-            WHERE restaurant = r_restaurant
-              AND start_time <= r_datetime::time
-              AND end_time   >= r_datetime::time
-            LIMIT 1
-        )
-          AND s2.id = s1.id;
+          AND r.restaurant = r_restaurant
+          AND r.datetime::DATE = r_datetime::DATE
+          AND s.day_of_week = EXTRACT(ISODOW FROM r_datetime::TIMESTAMP)::INT
+          AND (
+            ( s.start_time < s.end_time
+                AND (r_datetime::TIME >= s.start_time  AND r_datetime::TIME < s.end_time)
+                AND (r.datetime::TIME >= s.start_time AND r.datetime::TIME < s.end_time)
+                )
+
+                OR
+
+            ( s.start_time > s.end_time
+                AND ( r_datetime::TIME >= s.start_time OR r_datetime::TIME < s.end_time)
+                AND ( r.datetime::TIME >= s.start_time OR r.datetime::TIME < s.end_time )
+                )
+            );
 
         IF r_conflict > 0 THEN
             RAISE EXCEPTION
@@ -39,14 +46,14 @@ CREATE OR REPLACE FUNCTION check_table_reservation_conflict()
         END IF;
 
         RETURN NEW;
-    END;
+END;
 $$ LANGUAGE plpgsql;
 
 
 
 CREATE OR REPLACE TRIGGER check_table_reservation_conflict_trigger
-BEFORE INSERT OR UPDATE ON reservation_tables
-FOR EACH ROW
+    BEFORE INSERT OR UPDATE ON reservation_tables
+    FOR EACH ROW
 EXECUTE FUNCTION check_table_reservation_conflict();
 
 
