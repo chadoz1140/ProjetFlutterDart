@@ -34,7 +34,7 @@ class ClientStateNotifier extends AbstractAsyncNotifier<ClientState> {
   }
 
   // Réservations
-  Future<void> getReservations(Status? status) async {
+  Future<void> getReservations(String? status) async {
     final currentState = state.value ?? ClientState();
     state = const AsyncValue.loading();
     try {

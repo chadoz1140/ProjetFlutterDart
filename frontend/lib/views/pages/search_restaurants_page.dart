@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:prbd_2526_c01/core/tools/debounce.dart';
 import 'package:prbd_2526_c01/core/widgets/data_error_widget.dart';
-import 'package:prbd_2526_c01/models/client_search_restaurant_state.dart';
 import 'package:prbd_2526_c01/models/client_state.dart';
 import 'package:prbd_2526_c01/providers/client_state_provider.dart';
 import 'package:prbd_2526_c01/providers/reference_time_provider.dart';

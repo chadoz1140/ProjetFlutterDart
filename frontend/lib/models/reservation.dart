@@ -52,10 +52,10 @@ class Reservation{
     }
   }
 
-  static Future<List<Reservation>> getReservations({Status? status}) async {
+  static Future<List<Reservation>> getReservations({String? status}) async {
       final response = await ApiClient.post(
           'get_reservations',
-           body: json.encode({'p_status': status?.value}),
+           body: json.encode({'p_status': status}),
       );
       if(response.statusCode != 200) {
         throw Exception("Failed to get reservations");

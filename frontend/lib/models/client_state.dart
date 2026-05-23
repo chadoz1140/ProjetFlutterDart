@@ -5,7 +5,7 @@ import 'package:prbd_2526_c01/models/status.dart';
 class ClientState {
   // Reservations
   final Reservation? currentReservation;
-  final Status? reservationStatusFilter; //status type ('pending',....)
+  final String? reservationStatusFilter; //status type ('pending',....)
   final List<Reservation> reservations;
 
   // Restaurants
@@ -26,7 +26,7 @@ class ClientState {
 
   ClientState copyWith({
     Reservation? currentReservation,
-    Status? reservationStatusFilter,
+    String? reservationStatusFilter,
     List<Reservation>? reservations,
     Restaurant? currentRestaurant,
     String? searchText,

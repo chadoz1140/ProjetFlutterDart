@@ -20,7 +20,7 @@ class HomeClient extends ConsumerStatefulWidget{
 
 class _HomeClientState extends ConsumerState<HomeClient> {
 
-  Status? _selectedStatus = null;
+  String _selectedStatus = 'all';
 
   void _logout() {
     ref.read(currentUserProvider.notifier).logout();
@@ -61,7 +61,7 @@ class _HomeClientState extends ConsumerState<HomeClient> {
             icon: const Icon(Icons.refresh),
             tooltip: 'Rafraîchir les données',
             onPressed: () {
-              setState(() => _selectedStatus = null);
+              setState(() => _selectedStatus = 'all');
               notifier.refresh();
             },
           ),
@@ -100,39 +100,39 @@ class _HomeClientState extends ConsumerState<HomeClient> {
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 0),
-              child: SegmentedButton<Status?>(
+              child: SegmentedButton<String>(
                 showSelectedIcon: false,
                 segments: const [
                   ButtonSegment(
-                    value: null,
+                    value: 'all',
                     icon: Icon(Icons.list, size: 24),
                     tooltip: 'Toutes',
                   ),
                   ButtonSegment(
-                    value: Status.pending,
+                    value: 'pending',
                     icon: Icon(Icons.pending, size: 24, color: Colors.orange),
                     tooltip: 'En attente',
                   ),
                   ButtonSegment(
-                    value: Status.confirmed,
+                    value: 'confirmed',
                     icon: Icon(Icons.check_circle, size: 24, color: Colors.green),
                     tooltip: 'Confirmées',
                   ),
                   ButtonSegment(
-                    value: Status.completed,
+                    value: 'completed',
                     icon: Icon(Icons.event_available, size: 24, color: Colors.blue),
                     tooltip: 'Terminées',
                   ),
                   ButtonSegment(
-                    value: Status.cancelled,
+                    value: 'cancelled',
                     icon: Icon(Icons.cancel, size: 24, color: Colors.red),
                     tooltip: 'Annulées',
                   ),
                 ],
                 selected: {_selectedStatus},
                 onSelectionChanged: (selection) {
-                    final status = selection.first;
-                    setState( () => _selectedStatus = status);
+                    setState( () => _selectedStatus = selection.first);
+                    final status = selection.first == 'all' ? null : selection.first;
                     notifier.getReservations(status);
                 },
               ),
