@@ -35,9 +35,13 @@ class _SearchRestaurantsPageState extends ConsumerState<SearchRestaurantsPage>{
     return clientState.when(
         data: (state) => data(theme, state, clientNotifier),
         error: (err, stackTrace) => DataErrorWidget(error: err, stackTrace: stackTrace, notifier: clientNotifier),
-        loading: () => data (
+        loading: () => data(
           theme,
-          clientState.value ?? ClientState(),
+          ClientState(
+            searchText: _searchController.text,
+            restaurants: [],
+            hasMoreResults: false,
+          ),
           clientNotifier,
           isLoading: true,
         )
@@ -197,10 +201,10 @@ class _SearchRestaurantsPageState extends ConsumerState<SearchRestaurantsPage>{
     super.dispose();
   }
 
-  void _refresh() async{
-    await ref.read(clientStateProvider.notifier).refreshRestaurants();
-    _searchController.dispose();
+  void _refresh() async {
+    _searchController.clear();
     _debouncer.cancel();
-    _searchController = TextEditingController(text: '');
+
+    await ref.read(clientStateProvider.notifier).refreshRestaurants();
   }
 }
