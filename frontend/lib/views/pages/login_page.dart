@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:prbd_2526_c01/core/tools/validating_text_editing_controller.dart';
 import 'package:prbd_2526_c01/core/widgets/dialog_box.dart';
+import 'package:prbd_2526_c01/providers/manager_state_provider.dart';
 import 'package:prbd_2526_c01/providers/reference_time_provider.dart';
 import 'package:prbd_2526_c01/providers/current_user_provider.dart';
 
@@ -294,11 +295,17 @@ class _LoginPageState extends ConsumerState<LoginPage>{
 
   void _login(BuildContext context, String email, String password) async{
     await ref.read(currentUserProvider.notifier).login(email, password);
-    var securityState = ref.read(currentUserProvider);
+    var userState = ref.read(currentUserProvider);
 
     if(!context.mounted) return;
-    securityState.when(
-        data: (_) => Navigator.pushReplacementNamed(context, '/home'),
+    userState.when(
+        data: (_) {
+          final isManager = ref.read(currentUserProvider.notifier).isManager;
+          Navigator.pushReplacementNamed(
+              context,
+              isManager ? '/homeManager' : '/home',
+          );
+        },
         error: (error, _) => _showErrorOrSuccesMessage(context, 'Email ou mot de passe incorrect', true),
         loading: (){},
     );

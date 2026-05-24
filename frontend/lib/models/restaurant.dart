@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:developer';
 
 import 'package:prbd_2526_c01/core/services/api_client.dart';
 import 'package:prbd_2526_c01/models/service.dart';

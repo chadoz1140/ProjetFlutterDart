@@ -86,4 +86,15 @@ class CurrentUserNotifier extends AsyncNotifier<String?> {
     }
   }
 
+  bool get isManager {
+    final token = state.value;
+    if(token == null) return false;
+    try{
+      Map<String, dynamic> decoded = JwtDecoder.decode(token);
+      return decoded['role'] == 'manager';
+    }catch(e){
+      return false;
+    }
+  }
+
 }

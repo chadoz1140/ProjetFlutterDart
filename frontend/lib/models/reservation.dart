@@ -67,4 +67,24 @@ class Reservation{
       final List<dynamic> body = List<dynamic>.from(decoded);
       return body.map((dynamic item) => Reservation.fromJson(item)).toList();
   }
+
+  static Future<List<Reservation>> getReservationsByRestaurant(int restaurantId, {String? status}) async {
+    final response = await ApiClient.post(
+      'get_reservations_by_restaurant',
+       body: json.encode({
+        'restaurant_id': restaurantId,
+        'p_status': status,
+      }),
+    );
+    if(response.statusCode != 200) {
+      throw Exception("Failed to get reservations");
+    }
+    final dynamic decoded = json.decode(response.body);
+    if(decoded == null) {
+      return [];
+    }
+    final List<dynamic> body = List<dynamic>.from(decoded);
+    return body.map((dynamic item) => Reservation.fromJson(item)).toList();
+  }
+
 }

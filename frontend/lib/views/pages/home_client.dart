@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:prbd_2526_c01/core/widgets/data_error_widget.dart';
-import 'package:prbd_2526_c01/models/status.dart';
 import 'package:prbd_2526_c01/providers/client_state_provider.dart';
-import 'package:prbd_2526_c01/providers/reference_time_provider.dart';
 import 'package:prbd_2526_c01/providers/current_user_provider.dart';
+import 'package:prbd_2526_c01/providers/reference_time_provider.dart';
 
 import '../../models/client_state.dart';
 import '../widgets/reservation_card.dart';

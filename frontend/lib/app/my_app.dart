@@ -10,13 +10,14 @@ import '../providers/current_user_provider.dart';
 import '../views/pages/login_page.dart';
 import '../views/pages/reservation_details.dart';
 import '../views/pages/restaurant_details.dart';
+import '../views/pages/restaurant_management_reservations.dart';
 
 class MyApp extends ConsumerWidget{
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final securityNotifier = ref.read(currentUserProvider.notifier);
+    final currentUserNotifier = ref.read(currentUserProvider.notifier);
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Namer App',
@@ -24,7 +25,7 @@ class MyApp extends ConsumerWidget{
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
       ),
-      initialRoute: securityNotifier.isLoggedIn ? '/home' : '/login',
+      initialRoute: currentUserNotifier.isLoggedIn ? (currentUserNotifier.isManager ? '/homeManager' : '/home'): '/login',
       routes: {
         '/login' : (context) => LoginPage(),
         '/signup': (context) => SignupPage(),
@@ -32,6 +33,7 @@ class MyApp extends ConsumerWidget{
         '/reservation_details': (context) => ReservationDetails(),
         '/searchRestaurants' : (context) => SearchRestaurantsPage(),
         '/restaurant_details' : (context) => RestaurantDetails(),
+        '/myRestantReservations' : (context) => RestaurantManagementReservations(),
       },
     );
   }
