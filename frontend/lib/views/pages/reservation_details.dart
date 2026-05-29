@@ -6,6 +6,7 @@ import 'package:prbd_2526_c01/providers/reference_time_provider.dart';
 import '../../core/widgets/data_error_widget.dart';
 import '../../models/reservation.dart';
 import '../../models/status.dart';
+import '../../providers/simulated_time_provider.dart';
 
 class ReservationDetails extends ConsumerStatefulWidget {
   final Reservation reservation;
@@ -35,6 +36,7 @@ class _ReservationDetailsState extends ConsumerState<ReservationDetails> {
   Widget build(BuildContext context) {
     final clientState = ref.watch(clientStateProvider);
     final clientNotifier = ref.read(clientStateProvider.notifier);
+    final simulatedDate = ref.read(simulatedTimeProvider.notifier);
     const List<String> days = ["lun.", "mar.", "mer.", "jeu.", "ven.", "sam.", "dim."];
 
     final theme = Theme.of(context);
@@ -226,25 +228,31 @@ class _ReservationDetailsState extends ConsumerState<ReservationDetails> {
                 ),
               ),
               const SizedBox(height: 24),
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () {},
-                      icon: const Icon(Icons.edit),
-                      label: const Text('Modifier'),
+              if (reservation.status != Status.completed && reservation.status != Status.cancelled)
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: switch (reservation.status) {
+                          Status.cancelled => null,
+                          Status.completed => null,
+                          Status.pending => () {},
+                          Status.confirmed => reservation.dateTime.isBefore(now) ? null : (){},
+                        },
+                        icon: const Icon(Icons.edit),
+                        label: const Text('Modifier'),
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () {},
-                      icon: const Icon(Icons.cancel),
-                      label: const Text('Annuler'),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () {},
+                        icon: const Icon(Icons.cancel),
+                        label: const Text('Annuler'),
+                      ),
                     ),
-                  ),
-                ],
-              ),
+                  ],
+                ),
             ],
           ),
         ),
