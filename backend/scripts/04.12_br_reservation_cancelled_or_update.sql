@@ -11,7 +11,7 @@ CREATE OR REPLACE FUNCTION new_reservation_tables_statut()
             end if;
             return new;
         end;
-    $$language plpgsql;
+    $$language plpgsql security definer;
 
 CREATE CONSTRAINT TRIGGER trigger_new_reservation_tables_statut
     AFTER INSERT
@@ -34,7 +34,7 @@ CREATE OR REPLACE FUNCTION update_statut_reservation() RETURNS TRIGGER AS
             end if;
             return new;
         end;
-    $$language plpgsql;
+    $$language plpgsql security definer;
 
 CREATE CONSTRAINT TRIGGER trigger_update_reservation_statut
     AFTER UPDATE OF status
@@ -42,4 +42,3 @@ CREATE CONSTRAINT TRIGGER trigger_update_reservation_statut
     DEFERRABLE INITIALLY DEFERRED
     FOR EACH ROW
 EXECUTE FUNCTION update_statut_reservation();
-

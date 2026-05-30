@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:prbd_2526_c01/providers/client_state_provider.dart';
 import 'package:prbd_2526_c01/providers/reference_time_provider.dart';
+import 'package:prbd_2526_c01/views/widgets/cancel_reservation.dart';
 import '../../core/widgets/data_error_widget.dart';
 import '../../models/reservation.dart';
 import '../../models/status.dart';
@@ -36,7 +37,6 @@ class _ReservationDetailsState extends ConsumerState<ReservationDetails> {
   Widget build(BuildContext context) {
     final clientState = ref.watch(clientStateProvider);
     final clientNotifier = ref.read(clientStateProvider.notifier);
-    final simulatedDate = ref.read(simulatedTimeProvider.notifier);
     const List<String> days = ["lun.", "mar.", "mer.", "jeu.", "ven.", "sam.", "dim."];
 
     final theme = Theme.of(context);
@@ -246,7 +246,12 @@ class _ReservationDetailsState extends ConsumerState<ReservationDetails> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: OutlinedButton.icon(
-                        onPressed: () {},
+                        onPressed: () async {
+                          final cancelled = await CancelReservation().show(context);
+                          if (cancelled){
+                            clientNotifier.cancelReservation(reservation);
+                          }
+                        },
                         icon: const Icon(Icons.cancel),
                         label: const Text('Annuler'),
                       ),

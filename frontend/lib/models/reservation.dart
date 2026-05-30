@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:prbd_2526_c01/core/services/api_client.dart';
 import 'package:prbd_2526_c01/models/restaurant.dart';
 import 'package:prbd_2526_c01/models/status.dart';
@@ -85,6 +86,28 @@ class Reservation{
     }
     final List<dynamic> body = List<dynamic>.from(decoded);
     return body.map((dynamic item) => Reservation.fromJson(item)).toList();
+  }
+
+  Future<Reservation> cancelReservation() async{
+    try{
+      final response = await ApiClient.post(
+        'cancel_reservation',
+        body: json.encode({
+          'reservation_id' : this.id,
+        }),
+      );
+      if (response.statusCode == 200){
+        final dynamic = Reservation.fromJson(json.decode(response.body));
+        return dynamic;
+      }
+      else {
+        throw Exception('Failed to cancel reservation');
+      }
+    }
+    catch(e, st){
+      debugPrint('$e\n$st');
+      throw Exception('Failed to cancel reservation');
+    }
   }
 
 }

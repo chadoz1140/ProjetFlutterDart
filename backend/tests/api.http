@@ -1,5 +1,5 @@
 @baseUrl = http://localhost:3000/rpc
-@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiY2xpZW50Iiwic3ViIjoibWFtaWNoZWxAZXBmYy5ldSIsIm5hbWUiOiJNYXJjIiwidXNlcl9pZCI6NCwiZXhwIjoxNzc4Mzc1ODY2fQ.4MgXiTsPptuXVI4HPOz_ZupDsXMXEOz5M8irVQwETxA
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiY2xpZW50Iiwic3ViIjoibWFtaWNoZWxAZXBmYy5ldSIsIm5hbWUiOiJNYXJjIiwidXNlcl9pZCI6NCwiZXhwIjoxNzgwMTk2Njk5fQ.NPKJzitmlBITK7eEMOh_2B2lws8-QhJ9gFGES6_5ZZA
 ###
 POST {{baseUrl}}/login
 Content-Type: application/json
@@ -18,13 +18,12 @@ Content-Type: application/json
 
 
 ### Test endpoint authenticated
-POST {{baseUrl}}/get_restaurants
+POST {{baseUrl}}/cancel_reservation
 Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "search_restaurant": "gastro",
-  "result_number": 11
+  "reservation_id": 2
 }
 
 ###

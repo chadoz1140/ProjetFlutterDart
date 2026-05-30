@@ -1,6 +1,7 @@
 
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:prbd_2526_c01/core/tools/abstract_async_notifier.dart';
 import 'package:prbd_2526_c01/models/client_state.dart';
@@ -137,6 +138,21 @@ class ClientStateNotifier extends AbstractAsyncNotifier<ClientState> {
      await getRestaurantDetails(restaurantId);
    }
 
-
+  Future<void> cancelReservation(Reservation reservation) async{
+    state = const AsyncValue.loading();
+    try{
+      final newReservation = await reservation.cancelReservation();
+      state = AsyncData(
+        state.value!.copyWith(currentReservation: newReservation),
+      );
+      await getReservations(state.value!.reservationStatusFilter);
+    }
+    catch(e){
+      state = AsyncValue.error(
+          "Something went wrong!\nPlease try again later.",
+          StackTrace.current
+      );
+    }
+  }
 
 }
