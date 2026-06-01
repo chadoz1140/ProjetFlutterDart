@@ -111,4 +111,4 @@ check (day_of_week >= 1 AND day_of_week <= 7);
 --heure de fin > heure de début
 ALTER TABLE services
 ADD CONSTRAINT check_end_time_and_start_time
-check ((extract(EPOCH FROM end_time) - extract(EPOCH FROM start_time)) > 60);
+check ((extract(EPOCH FROM end_time) - extract(EPOCH FROM start_time)) >= 3600);
