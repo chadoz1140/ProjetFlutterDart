@@ -279,3 +279,98 @@ begin
 end;
 $$ language plpgsql security definer;
 grant execute on function get_first_available_reservation_slot(int, int) to authenticated;
+
+/********************************************************
+  Retourne les créneaux disponibles pour une date donnée
+*************************************************************/
+
+drop function if exists get_slots_for_date(integer, date, integer);
+
+create or replace function get_slots_for_date(p_restaurant_id integer, p_date date, p_number_of_guests integer default 2)
+    returns reservation_edit_data as
+$$
+declare
+    v_service       record;
+    v_current_slot  time;
+    v_slots         time[]  := '{}';
+    v_over_capacity boolean := false;
+begin
+    for v_service in
+        select s.start_time, s.end_time, rt.slot_duration
+        from services s
+                 join restaurants rt on rt.id = s.restaurant
+        where s.restaurant = p_restaurant_id
+          and s.day_of_week = extract(isodow from p_date)::int
+        order by s.start_time
+        loop
+            v_current_slot := v_service.start_time;
+            while v_current_slot < v_service.end_time loop
+                    if array_length(v_slots, 1) is null then
+                        v_over_capacity := not is_restaurant_has_capacity_for_service(
+                                p_restaurant_id, p_date,
+                                v_service.start_time, v_service.end_time,
+                                p_number_of_guests);
+                    end if;
+                    v_slots        := array_append(v_slots, v_current_slot);
+                    v_current_slot := v_current_slot + (v_service.slot_duration || ' minutes')::interval;
+                end loop;
+        end loop;
+
+    return row(v_slots, is_restaurant_closed(p_restaurant_id, p_date), v_over_capacity)::reservation_edit_data;
+end;
+$$ language plpgsql security definer;
+
+grant execute on function get_slots_for_date(integer, date, integer) to authenticated;
+
+
+/*****************************************************************************
+ Met à jour une réservation. Si elle était confirmée, elle repasse à pending
+******************************************************************************/
+
+drop function if exists update_reservation(integer, timestamp, integer, text);
+
+create or replace function update_reservation(
+    p_reservation_id   integer,
+    p_datetime         timestamp,
+    p_number_of_guests integer,
+    p_special_requests text default null
+)
+    returns void as
+$$
+declare
+    v_old_status status_type;
+begin
+    if not exists (
+        select 1 from reservations r join users u on u.id = r.client
+        where r.id = p_reservation_id and u.email = auth.email()
+    ) then
+        raise exception 'Réservation introuvable.';
+    end if;
+
+    select status into v_old_status from reservations where id = p_reservation_id;
+
+    if v_old_status = 'confirmed' then
+        delete from reservation_tables where reservation = p_reservation_id;
+        update reservations
+        set datetime         = p_datetime,
+            number_of_guests = p_number_of_guests,
+            special_requests = p_special_requests,
+            status           = 'pending'
+        where id = p_reservation_id;
+    else
+        update reservations
+        set datetime         = p_datetime,
+            number_of_guests = p_number_of_guests,
+            special_requests = p_special_requests
+        where id = p_reservation_id;
+    end if;
+end;
+$$ language plpgsql security definer;
+
+grant execute on function update_reservation(integer, timestamp, integer, text) to authenticated;
+
+grant select on reservation_tables to authenticated;
+grant select on reservations to authenticated;
+
+
+

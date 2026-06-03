@@ -137,6 +137,21 @@ class ClientStateNotifier extends AbstractAsyncNotifier<ClientState> {
      await getRestaurantDetails(restaurantId);
    }
 
+   // Modifie une réservation et recharge ses détails
+   Future<void> updateReservation({
+     required int reservationId,
+     required DateTime newDateTime,
+     required int numberOfGuests,
+     String? specialRequests,
+   }) async {
+     await Reservation.updateReservation(
+       reservationId: reservationId,
+       newDateTime: newDateTime,
+       numberOfGuests: numberOfGuests,
+       specialRequests: specialRequests,
+     );
+     await getReservation(reservationId);
+   }
 
 
 }

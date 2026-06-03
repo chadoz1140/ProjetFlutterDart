@@ -4,6 +4,8 @@ import 'package:intl/intl.dart';
 import 'package:prbd_2526_c01/providers/client_state_provider.dart';
 import 'package:prbd_2526_c01/providers/reference_time_provider.dart';
 import '../../core/widgets/data_error_widget.dart';
+import '../../models/status.dart';
+import '../widgets/simulated_time_dialog.dart';
 
 class ReservationDetails extends ConsumerStatefulWidget{
 
@@ -54,12 +56,7 @@ class _ReservationDetailsState extends ConsumerState<ReservationDetails> {
           appBar: AppBar(
             leading: IconButton(
               icon: const Icon(Icons.arrow_back),
-              onPressed: () {
-                Navigator.pushNamed(
-                    context,
-                    '/home'
-                );
-              },
+              onPressed: () => Navigator.pop(context),
             ),
             title: const Text('Détails de la réservation'),
             automaticallyImplyLeading: false,
@@ -84,15 +81,18 @@ class _ReservationDetailsState extends ConsumerState<ReservationDetails> {
                   child: Tooltip(
                     message:
                     'Date/heure simulée utilisée pour les tests.\nCliquez pour modifier.',
-                    child: Text(
-                      DateFormat(
-                        'EEEE dd/MM/yyyy HH:mm',
-                        'fr_FR',
-                      ).format(now),
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: Colors.grey[400],
-                        fontWeight: FontWeight.normal,
+                    child: GestureDetector(
+                      onTap: () => SimulatedTimeDialog.show(context, ref),
+                      child: Text(
+                        DateFormat(
+                          'EEEE dd/MM/yyyy HH:mm',
+                          'fr_FR',
+                        ).format(now),
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: Colors.grey[400],
+                          fontWeight: FontWeight.normal,
+                        ),
                       ),
                     ),
                   ),
@@ -204,7 +204,12 @@ class _ReservationDetailsState extends ConsumerState<ReservationDetails> {
                                     color: Colors.white,
                                   ),
                                 ),
-                                backgroundColor: const Color(0xFFFF9800),
+                                backgroundColor: switch (reservation.status) {
+                                  Status.pending   => Colors.orange,
+                                  Status.confirmed => Colors.green,
+                                  Status.cancelled => Colors.red,
+                                  Status.completed => Colors.blue,
+                                },
                                 padding: EdgeInsets.zero,
                               ),
                             ],
@@ -229,25 +234,37 @@ class _ReservationDetailsState extends ConsumerState<ReservationDetails> {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: () {},
-                          icon: const Icon(Icons.edit),
-                          label: const Text('Modifier'),
+                  Builder(builder: (context) {
+                    final canEdit =
+                        reservation.status == Status.pending ||
+                            (reservation.status == Status.confirmed &&
+                                reservation.dateTime.isAfter(now));
+                    return Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: canEdit
+                                ? () => Navigator.pushNamed(
+                              context,
+                              '/edit_reservation',
+                              arguments: reservation.id,
+                            )
+                                : null,
+                            icon: const Icon(Icons.edit),
+                            label: const Text('Modifier'),
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: () {},
-                          icon: const Icon(Icons.cancel),
-                          label: const Text('Annuler'),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: () {},
+                            icon: const Icon(Icons.cancel),
+                            label: const Text('Annuler'),
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
+                      ],
+                    );
+                  }),
                 ],
               ),
             ),
