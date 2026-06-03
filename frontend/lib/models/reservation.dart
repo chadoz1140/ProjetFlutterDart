@@ -4,8 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import 'package:prbd_2526_c01/core/services/api_client.dart';
 import 'package:prbd_2526_c01/models/restaurant.dart';
-import 'package:prbd_2526_c01/models/status.dart';
 import 'package:prbd_2526_c01/models/restaurant_tables.dart';
+import 'package:prbd_2526_c01/models/status.dart';
 import 'package:prbd_2526_c01/models/user.dart';
 
 class Reservation{

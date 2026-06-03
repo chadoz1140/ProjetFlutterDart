@@ -156,14 +156,11 @@ class _HomeClientState extends ConsumerState<HomeClient> {
                       ReservationCard(
                         reservation: reservation,
                         onTap: () {
-                          Navigator.push(
+                          Navigator.pushNamed(
                             context,
-                            MaterialPageRoute(
-                              builder: (_) => ReservationDetails(
-                                  reservation: reservation
-                              ),
-                            ),
-                          );
+                            '/reservation_details',
+                            arguments: reservation.id,
+                          ).then((_) => notifier.refresh());
                         },
                       ),
                     ],

@@ -34,6 +34,7 @@ class MyApp extends ConsumerWidget{
         '/home' : (context) => HomeClient(),
         '/searchRestaurants' : (context) => SearchRestaurantsPage(),
         '/restaurant_details' : (context) => RestaurantDetails(),
+        '/reservation_details': (context) => ReservationDetails(),
         '/myRestantReservations' : (context) => RestaurantManagementReservations(),
         '/edit_reservation'     : (context) => const EditReservationPage(),
       },

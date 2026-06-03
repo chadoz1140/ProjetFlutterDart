@@ -8,7 +8,6 @@ import 'package:prbd_2526_c01/providers/current_user_provider.dart';
 
 import '../models/reservation.dart';
 import '../models/restaurant.dart';
-import '../models/status.dart';
 
 final clientStateProvider = AsyncNotifierProvider<ClientStateNotifier, ClientState>(
     () => ClientStateNotifier(),
