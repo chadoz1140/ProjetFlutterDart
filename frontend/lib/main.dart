@@ -1,23 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:prbd_2526_c01/app/my_app.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
-void main() {
-  runApp(TestPage());
+import 'package:prbd_2526_c01/core/tools/Params.dart';
+
+import 'core/tools/my_provider_observer.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting('fr_FR', null);
+  await Params.init();
+  runApp(
+    ProviderScope(
+      observers: [MyProviderObserver()],
+      retry: (int _, Object _) => null,
+      child: MyApp(),
+    ),
+  );
 }
 
-class TestPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: .fromSeed(seedColor: Colors.blue),
-      ),
-      home: Scaffold(
-        appBar: AppBar(title: Text('Test Page')),
-        body: Center(
-          child: Text('Welcome group c01!', style: TextStyle(fontSize: 24)),
-        ),
-      ),
-    );
-  }
-}

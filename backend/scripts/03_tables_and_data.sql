@@ -315,3 +315,9 @@ $$ language plpgsql security definer;
 grant execute on function reset_database to anon;
 
 select reset_database();
+
+
+/** Test dans postman
+--grant select on all tables in schema public to authenticated;
+--grant select on all tables in schema public to anon;
+--grant insert, update, delete on all tables in schema public to authenticated; **/

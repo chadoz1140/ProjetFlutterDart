@@ -1,0 +1,37 @@
+@baseUrl = http://localhost:3000/rpc
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiY2xpZW50Iiwic3ViIjoibWFtaWNoZWxAZXBmYy5ldSIsIm5hbWUiOiJNYXJjIiwidXNlcl9pZCI6NCwiZXhwIjoxNzgwMTk2Njk5fQ.NPKJzitmlBITK7eEMOh_2B2lws8-QhJ9gFGES6_5ZZA
+###
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "mamichel@epfc.eu",
+  "password": "Password1,"
+}
+
+<> 2026-05-08T013836.200.json
+<> 2026-05-08T013803.200.json
+<> 2026-05-08T005352.200.json
+<> 2026-05-07T230253.200.json
+<> 2026-05-07T230248.200.json
+<> 2026-05-07T213155.200.json
+
+
+### Test endpoint authenticated
+POST {{baseUrl}}/cancel_reservation
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "reservation_id": 2
+}
+
+###
+POST {{baseUrl}}/get_restaurants
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "search_restaurant": "",
+  "result_number": 6
+}

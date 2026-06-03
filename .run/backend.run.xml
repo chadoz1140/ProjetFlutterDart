@@ -3,6 +3,32 @@
     <script-file value="$PROJECT_DIR$/backend/scripts/01_init.sql" />
     <script-file value="$PROJECT_DIR$/backend/scripts/02_security.sql" />
     <script-file value="$PROJECT_DIR$/backend/scripts/03_tables_and_data.sql" />
+    <script-file value="$PROJECT_DIR$/backend/scripts/04.00_checks.sql" />
+    <script-file value="$PROJECT_DIR$/backend/scripts/04.01_br_reservation_for_client.sql" />
+    <script-file value="$PROJECT_DIR$/backend/scripts/04.02_br_check_reservation_tables_capacity.sql" />
+    <script-file value="$PROJECT_DIR$/backend/scripts/04.03_br_check_table_belongs_to_restaurant.sql" />
+    <script-file value="$PROJECT_DIR$/backend/scripts/04.04_br_check_reservation_service_time.sql" />
+    <script-file value="$PROJECT_DIR$/backend/scripts/04.05_br_check_reservation_slot.sql" />
+    <script-file value="$PROJECT_DIR$/backend/scripts/04.06_br_check_table_reservation_conflict.sql" />
+    <script-file value="$PROJECT_DIR$/backend/scripts/04.07_br_service_time_overlap.sql" />
+    <script-file value="$PROJECT_DIR$/backend/scripts/04.08_br_check_slot_duration.sql" />
+    <script-file value="$PROJECT_DIR$/backend/scripts/04.09_br_reservation_status_transition_trigger.sql" />
+    <script-file value="$PROJECT_DIR$/backend/scripts/04.10_br_restaurant_managers.sql" />
+    <script-file value="$PROJECT_DIR$/backend/scripts/04.11_br_reservation_not_editable.sql" />
+    <script-file value="$PROJECT_DIR$/backend/scripts/04.12_br_reservation_cancelled_or_update.sql" />
+    <script-file value="$PROJECT_DIR$/backend/scripts/04.13_br_check_same_service_restaurant.sql" />
+    <script-file value="$PROJECT_DIR$/backend/scripts/04.14_br_check_reservation_time_rules.sql" />
+    <script-file value="$PROJECT_DIR$/backend/scripts/trigger_users_role_immutable.sql" />
+    <script-file value="$PROJECT_DIR$/backend/scripts/trigger_tables_restaurant_unmodifiable.sql" />
+    <script-file value="$PROJECT_DIR$/backend/scripts/04.15_prevent_primary_key_update.sql" />
+    <script-file value="$PROJECT_DIR$/backend/scripts/05.00_types.sql" />
+    <script-file value="$PROJECT_DIR$/backend/scripts/05.01_ep_simulated_time.sql" />
+    <script-file value="$PROJECT_DIR$/backend/scripts/05.02_ep_table.sql" />
+    <script-file value="$PROJECT_DIR$/backend/scripts/05.03_ep_service.sql" />
+    <script-file value="$PROJECT_DIR$/backend/scripts/05.04_ep_user.sql" />
+    <script-file value="$PROJECT_DIR$/backend/scripts/05.05_ep_restaurant.sql" />
+    <script-file value="$PROJECT_DIR$/backend/scripts/05.06_ep_reservation.sql" />
+    <script-file value="$PROJECT_DIR$/backend/scripts/trigger_reservation_no_change_restaurant_client.sql" />
     <script-mode>FILE</script-mode>
     <data-source id="6d275bb5-c69c-4f95-bc29-f6a29631655b" namespace="database/&quot;prbd-2526-c01&quot;" />
     <method v="2" />
