@@ -8,6 +8,7 @@ import '../../core/tools/debounce.dart';
 import '../../core/tools/validating_text_editing_controller.dart';
 import '../../core/widgets/data.error.widget.dart';
 import '../../models/client_state.dart';
+import '../widgets/simulated_time_dialog.dart';
 
 class NewReservationPage extends ConsumerStatefulWidget{
   @override
@@ -18,7 +19,9 @@ class NewReservationPage extends ConsumerStatefulWidget{
 class _NewReservationPageState extends ConsumerState<NewReservationPage>{
   late ValidatingTextEditingController _specialRequestsController;
 
-  final Debouncer _capacityDebouncer = Debouncer();
+  final Debouncer _capacityDebouncer = Debouncer(
+    delay: Duration(milliseconds: 80),
+  );
 
   @override
   void initState() {
@@ -107,12 +110,15 @@ class _NewReservationPageState extends ConsumerState<NewReservationPage>{
           child: SafeArea(
               child: Padding(
                 padding: const EdgeInsets.only(top: 2),
-                child: Text(
-                  DateFormat('EEEE dd/MM/yyyy HH:mm', 'fr_FR').format(now),
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: Colors.grey[400],
-                    fontWeight: FontWeight.normal,
+                child: GestureDetector(
+                  onTap: () => SimulatedTimeDialog.show(context, ref),
+                  child: Text(
+                    DateFormat('EEEE dd/MM/yyyy HH:mm', 'fr_FR').format(now),
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: Colors.grey[400],
+                      fontWeight: FontWeight.normal,
+                    ),
                   ),
                 ),
               )
@@ -272,6 +278,8 @@ class _NewReservationPageState extends ConsumerState<NewReservationPage>{
                           ? () {
                         final newGuests = numberOfGuests - 1;
 
+                        notifier.changeNewReservationGuests(newGuests);
+
                         _capacityDebouncer.call(() {
                           notifier.checkNewReservationOverCapacity(newGuests);
                         });
@@ -283,6 +291,8 @@ class _NewReservationPageState extends ConsumerState<NewReservationPage>{
                       onPressed: numberOfGuests < 10
                           ? () {
                         final newGuests = numberOfGuests + 1;
+
+                        notifier.changeNewReservationGuests(newGuests);
 
                         _capacityDebouncer.call(() {
                           notifier.checkNewReservationOverCapacity(newGuests);
