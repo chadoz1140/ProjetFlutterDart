@@ -380,80 +380,230 @@ begin
 end;
 $$language plpgsql security definer;
 
+
+/***************************************************************************
+ Construit les donnees de reservation pour un restaurant et une date donnee
+****************************************************************************/
+
+drop function if exists build_reservation_slots_data(integer, date, integer);
+
+create or replace function build_reservation_slots_data(
+    p_restaurant_id integer,
+    p_date date,
+    p_number_of_guests integer default 2
+)
+    returns initial_reservation_data as
+$$
+declare
+    v_reference_time timestamp;
+    v_service record;
+    v_current_slot time;
+    v_slots time[] := '{}';
+    v_over_capacity boolean := false;
+begin
+    v_reference_time := get_reference_time();
+
+    for v_service in
+        select s.start_time, s.end_time, rt.slot_duration
+        from services s
+                 join restaurants rt on rt.id = s.restaurant
+        where s.restaurant = p_restaurant_id
+          and s.day_of_week = extract(isodow from p_date)::int
+        order by s.start_time
+        loop
+            if not is_client_has_reservation_in_service(
+                    p_restaurant_id,
+                    auth.id(),
+                    p_date,
+                    v_service.start_time,
+                    v_service.end_time
+                   ) then
+
+                v_current_slot := v_service.start_time;
+                while v_current_slot < v_service.end_time loop
+                        if (p_date + v_current_slot) >= v_reference_time then
+
+                            if array_length(v_slots, 1) is null then
+                                v_over_capacity := not is_restaurant_has_capacity_for_service(
+                                        p_restaurant_id,
+                                        p_date,
+                                        v_service.start_time,
+                                        v_service.end_time,
+                                        p_number_of_guests
+                                                       );
+                            end if;
+                            v_slots := array_append(v_slots, v_current_slot);
+                        end if;
+                        v_current_slot := v_current_slot + (v_service.slot_duration || ' minutes')::interval;
+                    end loop;
+            end if;
+        end loop;
+    return row(
+        get_restaurant_info(p_restaurant_id),
+        p_date,
+        v_slots[1],
+        v_slots,
+        is_restaurant_closed(p_restaurant_id, p_date),
+        is_client_has_reservation_for_all_services(p_restaurant_id, auth.id(), p_date),
+        v_over_capacity
+        )::initial_reservation_data;
+end;
+$$ language plpgsql security definer;
+
+
 /***************************************************************************
  Retourne les donnees necessaires au premier affichage de l'ecran
 ****************************************************************************/
 
 drop function if exists get_first_available_reservation_slot(int, int);
-create or replace function get_first_available_reservation_slot(p_restaurant_id integer, number_of_guests integer default 2)
+create or replace function get_first_available_reservation_slot(
+    p_restaurant_id integer,
+    number_of_guests integer default 2
+)
     returns initial_reservation_data as
 $$
 declare
-    v_reference_time       timestamp;
-    v_start_date   date;
-    v_service      record;
-    v_current_slot time;
-    v_slots time[] := '{}';
-    v_over_capacity bool := false;
-
+    v_reference_time timestamp;
 begin
     perform auth.check_logged();
-    if (auth.role() != 'client') then
+
+    if auth.role() != 'client' then
         raise exception 'Access denied';
     end if;
 
     v_reference_time := get_reference_time();
 
-    v_start_date := v_reference_time::date;
-
-    for v_service in
-        select start_time, end_time, slot_duration
-        from restaurants rt
-                 join services s on rt.id = s.restaurant
-        where s.restaurant = p_restaurant_id
-          and s.day_of_week = extract(isodow from v_start_date)::int
-        order by start_time
-        loop
-            if not is_client_has_reservation_in_service(
-                    p_restaurant_id,
-                    auth.id(),
-                    v_start_date,
-                    v_service.start_time,
-                    v_service.end_time)
-            then
-                v_current_slot := v_service.start_time;
-
-                while v_current_slot < v_service.end_time loop
-                        if (v_start_date + v_current_slot) >= v_reference_time then
-                            if(array_length(v_slots, 1) is null) then
-                                v_over_capacity := not is_restaurant_has_capacity_for_service(
-                                        p_restaurant_id,
-                                        v_start_date,
-                                        v_service.start_time,
-                                        v_service.end_time ,
-                                        number_of_guests);
-                            end if;
-                            v_slots := array_append(v_slots, v_current_slot);
-                        end if;
-
-                        v_current_slot := v_current_slot + (v_service.slot_duration || ' minutes')::interval;
-                    end loop;
-            end if;
-
-        end loop;
-
-    return row (
-        get_restaurant_info(p_restaurant_id),
-        v_start_date,
-        v_slots[1],
-        v_slots,
-        is_restaurant_closed(p_restaurant_id, v_start_date),
-        is_client_has_reservation_for_all_services(p_restaurant_id,auth.id(),v_start_date),
-        v_over_capacity
-        )::initial_reservation_data;
+    return build_reservation_slots_data(
+            p_restaurant_id,
+            v_reference_time::date,
+            number_of_guests
+           );
 end;
 $$ language plpgsql security definer;
 grant execute on function get_first_available_reservation_slot(int, int) to authenticated;
+
+/***************************************************************************
+ Retourne les creneaux disponibles pour une date choisie
+****************************************************************************/
+
+drop function if exists get_reservation_slots(integer, date, integer);
+create or replace function get_reservation_slots(
+    p_restaurant_id integer,
+    p_date date,
+    p_number_of_guests integer default 2
+)
+    returns initial_reservation_data as
+$$
+begin
+    perform auth.check_logged();
+
+    if auth.role() != 'client' then
+        raise exception 'Access denied';
+    end if;
+
+    return build_reservation_slots_data(
+            p_restaurant_id,
+            p_date,
+            p_number_of_guests
+           );
+end;
+$$ language plpgsql security definer;
+grant execute on function get_reservation_slots(integer, date, integer) to authenticated;
+
+/***************************************************************************
+ Verifie si le nombre de convives depasse la capacite disponible
+ pour le creneau choisi
+****************************************************************************/
+
+drop function if exists check_reservation_over_capacity(integer, date, time, integer);
+create or replace function check_reservation_over_capacity(
+    p_restaurant_id integer,
+    p_date date,
+    p_slot time,
+    p_number_of_guests integer
+)
+    returns boolean as
+$$
+declare
+    v_service record;
+begin
+
+    perform auth.check_logged();
+
+    if auth.role() != 'client' then
+        raise exception 'Access denied';
+    end if;
+
+    select s.start_time, s.end_time
+    into v_service
+    from services s
+    where s.restaurant = p_restaurant_id
+      and s.day_of_week = extract(isodow from p_date)::int
+      and p_slot >= s.start_time
+      and p_slot < s.end_time
+    limit 1;
+
+    if v_service is null then
+        raise exception 'No service found for this slot.';
+    end if;
+
+    return not is_restaurant_has_capacity_for_service(
+            p_restaurant_id,
+            p_date,
+            v_service.start_time,
+            v_service.end_time,
+            p_number_of_guests
+               );
+end;
+$$ language plpgsql security definer;
+grant execute on function check_reservation_over_capacity(integer, date, time, integer) to authenticated;
+
+
+/***************************************************************************
+ Cree une nouvelle reservation client en statut pending
+****************************************************************************/
+
+drop function if exists save_reservation(integer, timestamp, integer, text);
+create or replace function save_reservation(
+    p_restaurant_id integer,
+    p_datetime timestamp,
+    p_number_of_guests integer,
+    p_special_requests text default null
+)
+    returns reservation_details as
+$$
+declare
+    v_reservation_id integer;
+
+begin
+    perform auth.check_logged();
+
+    if auth.role() != 'client' then
+        raise exception 'Access denied';
+    end if;
+
+    insert into reservations (
+        client,
+        restaurant,
+        datetime,
+        number_of_guests,
+        status,
+        special_requests
+    )
+    values (
+               auth.id(),
+               p_restaurant_id,
+               p_datetime,
+               p_number_of_guests,
+               'pending',
+               nullif(trim(p_special_requests), '')
+           )
+    returning id into v_reservation_id;
+    return get_reservation_details(v_reservation_id);
+end;
+$$ language plpgsql security definer;
+
+grant execute on function save_reservation(integer, timestamp, integer, text) to authenticated;
 
 /********************************************************
   Retourne les créneaux disponibles pour une date donnée

@@ -170,7 +170,9 @@ class _HomeClientState extends ConsumerState<HomeClient> {
             ),
           ),
           floatingActionButton: FloatingActionButton.extended(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.pushReplacementNamed(context, '/searchRestaurants');
+            },
             icon: const Icon(Icons.add),
             label: const Text('Nouvelle réservation'),
           ),
