@@ -160,7 +160,7 @@ class _HomeClientState extends ConsumerState<HomeClient> {
                             context,
                             MaterialPageRoute(
                               builder: (_) => ReservationDetails(
-                                reservation: reservation
+                                  reservation: reservation
                               ),
                             ),
                           );

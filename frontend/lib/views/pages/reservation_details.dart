@@ -5,6 +5,8 @@ import 'package:prbd_2526_c01/providers/client_state_provider.dart';
 import 'package:prbd_2526_c01/providers/reference_time_provider.dart';
 import 'package:prbd_2526_c01/views/widgets/cancel_reservation.dart';
 import '../../core/widgets/data_error_widget.dart';
+import '../../models/status.dart';
+import '../widgets/simulated_time_dialog.dart';
 import '../../models/reservation.dart';
 import '../../models/status.dart';
 
@@ -20,6 +22,7 @@ class ReservationDetails extends ConsumerStatefulWidget {
   ConsumerState<ReservationDetails> createState() =>
       _ReservationDetailsState();
 }
+
 
 class _ReservationDetailsState extends ConsumerState<ReservationDetails> {
 

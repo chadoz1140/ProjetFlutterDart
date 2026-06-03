@@ -105,6 +105,26 @@ create type restaurant_with_client_info as
    pending_requests_count    int
 );
 
+drop type if exists initial_reservation_data cascade;
+create type initial_reservation_data as
+(
+    restaurant  restaurant_info,
+    reservation_date date,
+    selected_slot time,
+    slots time[],
+    restaurant_closed boolean,
+    client_has_reservation_for_all_services boolean, /*pour un seul client 1 seule reservation par service, par restau, par date*/
+    over_capacity boolean
+);
+
+drop type if exists reservation_edit_data cascade;
+create type reservation_edit_data as
+(
+    slots             time[],
+    restaurant_closed boolean,
+    over_capacity     boolean
+);
+
 drop type if exists table_details cascade;
 
 create type table_details as

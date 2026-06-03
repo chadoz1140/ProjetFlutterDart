@@ -1,7 +1,6 @@
 
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:prbd_2526_c01/core/tools/abstract_async_notifier.dart';
 import 'package:prbd_2526_c01/models/client_state.dart';
@@ -139,6 +138,22 @@ class ClientStateNotifier extends AbstractAsyncNotifier<ClientState> {
     final restaurantId = state.value?.currentRestaurant?.id;
     if(restaurantId == null) return;
      await getRestaurantDetails(restaurantId);
+   }
+
+   // Modifie une réservation et recharge ses détails
+   Future<void> updateReservation({
+     required int reservationId,
+     required DateTime newDateTime,
+     required int numberOfGuests,
+     String? specialRequests,
+   }) async {
+     await Reservation.updateReservation(
+       reservationId: reservationId,
+       newDateTime: newDateTime,
+       numberOfGuests: numberOfGuests,
+       specialRequests: specialRequests,
+     );
+     await getReservation(reservationId);
    }
 
   Future<void> cancelReservation(Reservation reservation) async{

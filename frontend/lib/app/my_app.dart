@@ -8,6 +8,7 @@ import 'package:prbd_2526_c01/views/pages/search_restaurants_page.dart';
 import 'package:prbd_2526_c01/views/pages/signup_page.dart';
 import '../models/reservation.dart';
 import '../providers/current_user_provider.dart';
+import '../views/pages/edit_reservation.dart';
 import '../views/pages/login_page.dart';
 import '../views/pages/reservation_details.dart';
 import '../views/pages/restaurant_details.dart';
@@ -34,6 +35,7 @@ class MyApp extends ConsumerWidget{
         '/searchRestaurants' : (context) => SearchRestaurantsPage(),
         '/restaurant_details' : (context) => RestaurantDetails(),
         '/myRestantReservations' : (context) => RestaurantManagementReservations(),
+        '/edit_reservation'     : (context) => const EditReservationPage(),
       },
     );
   }
