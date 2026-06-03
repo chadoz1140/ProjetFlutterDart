@@ -47,4 +47,80 @@ class ManagerStateNotifier extends AbstractAsyncNotifier<ManagerState> {
     return getReservationsByRestaurant(restaurantId, null);
   }
 
+  Future<void> getReservationDetailsManager(int reservationId) async {
+    /*AsyncValue.loading() consèrve l'ancien state
+     donc on est pas obliger de l'initialiser dans une variable (final currentState = state.value ?? ManagerState())*/
+
+    state = const AsyncValue.loading();
+    try {
+      final reservation = await Reservation.getReservationDetailsManager(reservationId);
+      state = AsyncData(state.value!.copyWith(
+        currentReservation: reservation,
+      ));
+    } catch (e) {
+      state = AsyncError(
+        "Something went wrong!\nPlease try again later.",
+        StackTrace.current,
+      );
+    }
+  }
+
+  // Refresh page details restaurant
+  Future<void> refreshReservationDetailsManager() async {
+    final reservationId = state.value?.currentReservation?.id;
+    if (reservationId == null) return;
+
+    await getReservationDetailsManager(reservationId);
+  }
+
+  Future<void> cancelReservationManager(Reservation reservation) async{
+    state = const AsyncValue.loading();
+    try{
+      final newReservation = await reservation.cancelReservationManager();
+      state = AsyncData(
+        state.value!.copyWith(currentReservation: newReservation),
+      );
+
+    }
+    catch(e){
+      state = AsyncValue.error(
+          "Something went wrong!\nPlease try again later.",
+          StackTrace.current
+      );
+    }
+  }
+
+  Future<void> completedReservationManager(Reservation reservation) async{
+    state = const AsyncValue.loading();
+    try{
+      final newReservation = await reservation.completedReservationManager();
+      state = AsyncData(
+        state.value!.copyWith(currentReservation: newReservation),
+      );
+
+    }
+    catch(e){
+      state = AsyncValue.error(
+          "Something went wrong!\nPlease try again later.",
+          StackTrace.current
+      );
+    }
+  }
+
+  Future<void> confirmedReservationManager(Reservation reservation) async{
+    state = const AsyncValue.loading();
+    try{
+      final newReservation = await reservation.confirmedReservationManager();
+      state = AsyncData(
+        state.value!.copyWith(currentReservation: newReservation),
+      );
+
+    }
+    catch(e){
+      state = AsyncValue.error(
+          "Something went wrong!\nPlease try again later.",
+          StackTrace.current
+      );
+    }
+  }
 }

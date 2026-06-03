@@ -33,7 +33,7 @@ begin
 
     return null;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer;
 --
 drop trigger if exists check_reservation_tables_capacity_trigger on reservation_tables;
 create constraint trigger check_reservation_tables_capacity_trigger

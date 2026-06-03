@@ -8,7 +8,6 @@ import 'package:prbd_2526_c01/providers/current_user_provider.dart';
 
 import '../models/reservation.dart';
 import '../models/restaurant.dart';
-import '../models/status.dart';
 
 final clientStateProvider = AsyncNotifierProvider<ClientStateNotifier, ClientState>(
       () => ClientStateNotifier(),
@@ -68,6 +67,9 @@ class ClientStateNotifier extends AbstractAsyncNotifier<ClientState> {
 
   // Réservation courante
   Future<void> getReservation(int reservationId) async{
+    /* AsyncValue.loading() consèrve l'ancien state
+       donc on est pas obliger de l'initialiser dans une variable (final currentState = state.value ?? ManagerState()) */
+
     state = const AsyncValue.loading();
     try{
       final reservation = await Reservation.getReservation(reservationId);
@@ -137,7 +139,38 @@ class ClientStateNotifier extends AbstractAsyncNotifier<ClientState> {
     await getRestaurantDetails(restaurantId);
   }
 
+   // Modifie une réservation et recharge ses détails
+   Future<void> updateReservation({
+     required int reservationId,
+     required DateTime newDateTime,
+     required int numberOfGuests,
+     String? specialRequests,
+   }) async {
+     await Reservation.updateReservation(
+       reservationId: reservationId,
+       newDateTime: newDateTime,
+       numberOfGuests: numberOfGuests,
+       specialRequests: specialRequests,
+     );
+     await getReservation(reservationId);
+   }
 
+  Future<void> cancelReservation(Reservation reservation) async{
+    state = const AsyncValue.loading();
+    try{
+      final newReservation = await reservation.cancelReservation();
+      state = AsyncData(
+        state.value!.copyWith(currentReservation: newReservation),
+      );
+      await getReservations(state.value!.reservationStatusFilter);
+    }
+    catch(e){
+      state = AsyncValue.error(
+          "Something went wrong!\nPlease try again later.",
+          StackTrace.current
+      );
+    }
+  }
 
   Future<void> loadNewReservationForm(int restaurantId) async {
     final currentState = state.value ?? ClientState();

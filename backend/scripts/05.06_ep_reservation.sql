@@ -77,6 +77,181 @@ create or replace function get_reservations_by_restaurant(restaurant_id int, p_s
 
 grant execute on function get_reservations_by_restaurant(int, status_type) to authenticated;
 
+/** Récupère les informations de base des tables d'une reservation  **/
+drop function if exists get_table_details_by_reservation_id(reservation int);
+
+create or replace function get_table_details_by_reservation_id(reservation_id int)
+    returns table_details[] as
+$$
+select array(
+               select row(t.id, get_restaurant_info(t.restaurant), t.table_number, t.capacity)::table_details
+               from tables as t
+                        join reservation_tables as rt on rt.table = t.id
+               where rt.reservation = reservation_id
+               order by t.table_number
+       );
+
+$$language sql security definer;
+
+drop function if exists get_reservations_details_manager(int);
+
+create or replace function get_reservations_details_manager(reservation_id int)
+    returns reservation_details_manager as
+    $$
+        select row(r.id, r.datetime, r.number_of_guests, r.status, r.special_requests,
+                   get_client_info(r.client), get_restaurant_info(r.restaurant),
+                   get_table_details_by_reservation_id(r.id))::reservation_details_manager
+        from reservations r
+        where r.id = reservation_id and exists(select *
+                                               from restaurant_managers as rm
+                                               /* on vérifie que user est bien le manager du restaurant (rm.manager = auth.id())
+                                                et que le restaurant de l'user est le meme que celui de la réservation (rm.restaurant = r.restaurant) */
+                                               where rm.manager = auth.id() and rm.restaurant = r.restaurant);
+
+    $$language sql security definer ;
+
+grant execute on function get_reservations_details_manager(int) to authenticated;
+
+/*Annule une réservation*/
+
+drop function if exists cancel_reservation(reservation_id int);
+
+create or replace function cancel_reservation(reservation_id int)
+    returns reservation_details as
+$$
+    declare
+        updated_reservation reservations;
+    begin
+        if not exists (
+            select 1
+            from reservations r
+            where r.id = cancel_reservation.reservation_id
+              and r.client = auth.id()
+              and r.status in ('pending', 'confirmed')
+        ) then
+            raise exception 'Reservation not found or not cancellable';
+        end if;
+
+        delete from reservation_tables rt
+        where rt.reservation = cancel_reservation.reservation_id;
+
+        update reservations r
+        set status = 'cancelled'
+        where r.id = cancel_reservation.reservation_id
+          and r.client = auth.id()
+        returning * into updated_reservation;
+
+        return get_reservation_details(updated_reservation.id);
+    end;
+$$ language plpgsql security definer;
+
+revoke execute on function public.cancel_reservation(int) from anon;
+grant execute on function public.cancel_reservation(int) to authenticated;
+
+---------- Annule une réservation ----------
+drop function if exists cancel_reservation_manager(reservation_id int);
+
+create or replace function cancel_reservation_manager(reservation_id int)
+    returns reservation_details_manager as
+$$
+    declare
+        updated_reservation reservations;
+    begin
+        if not exists (
+            select *
+            from reservations r
+                join restaurant_managers rm on rm.restaurant = r.restaurant
+            where r.id = cancel_reservation_manager.reservation_id
+              and rm.manager = auth.id()
+              and r.status in ('pending', 'confirmed')
+        ) then
+            raise exception 'Reservation not found or not cancellable';
+        end if;
+
+        delete from reservation_tables rt
+        where rt.reservation = cancel_reservation_manager.reservation_id;
+
+        update reservations r
+        set status = 'cancelled'
+        where r.id = cancel_reservation_manager.reservation_id
+        returning * into updated_reservation;
+
+        return get_reservations_details_manager(updated_reservation.id);
+
+    end;
+$$ language plpgsql security definer;
+
+revoke execute on function cancel_reservation_manager(int) from anon;
+grant execute on function cancel_reservation_manager(int) to authenticated;
+
+---------- Termine une réservation ----------
+
+drop function if exists completed_reservation_manager(reservation_id int);
+
+create or replace function completed_reservation_manager(reservation_id int)
+    returns reservation_details_manager as
+$$
+    declare
+        updated_reservation reservations;
+    begin
+        if not exists (
+            select *
+            from reservations r
+                join restaurant_managers rm on rm.restaurant = r.restaurant
+            where r.id = completed_reservation_manager.reservation_id
+              and rm.manager = auth.id()
+              and r.status = 'confirmed'
+        ) then
+            raise exception 'Reservation not found or not completable';
+        end if;
+
+        update reservations r
+        set status = 'completed'
+        where r.id = completed_reservation_manager.reservation_id
+        returning * into updated_reservation;
+
+        return get_reservations_details_manager(updated_reservation.id);
+
+    end;
+$$ language plpgsql security definer;
+
+revoke execute on function completed_reservation_manager(int) from anon;
+grant execute on function completed_reservation_manager(int) to authenticated;
+
+---------- Confirmé une réservation ----------
+
+drop function if exists confirmed_reservation_manager(reservation_id int);
+
+create or replace function confirmed_reservation_manager(reservation_id int)
+    returns reservation_details_manager as
+$$
+    declare
+        updated_reservation reservations;
+    begin
+        if not exists (
+            select *
+            from reservations r
+                join restaurant_managers rm on rm.restaurant = r.restaurant
+            where r.id = confirmed_reservation_manager.reservation_id
+              and rm.manager = auth.id()
+              and r.status = 'pending'
+        ) then
+            raise exception 'Reservation not found or not completable';
+        end if;
+
+        update reservations r
+        set status = 'confirmed'
+        where r.id = confirmed_reservation_manager.reservation_id
+        returning * into updated_reservation;
+
+        return get_reservations_details_manager(updated_reservation.id);
+
+    end;
+$$ language plpgsql security definer;
+
+revoke execute on function confirmed_reservation_manager(int) from anon;
+grant execute on function confirmed_reservation_manager(int) to authenticated;
+
 
 /***************************************************************************
  Retourne le temps de reference de l'application :
@@ -429,3 +604,98 @@ end;
 $$ language plpgsql security definer;
 
 grant execute on function save_reservation(integer, timestamp, integer, text) to authenticated;
+
+/********************************************************
+  Retourne les créneaux disponibles pour une date donnée
+*************************************************************/
+
+drop function if exists get_slots_for_date(integer, date, integer);
+
+create or replace function get_slots_for_date(p_restaurant_id integer, p_date date, p_number_of_guests integer default 2)
+    returns reservation_edit_data as
+$$
+declare
+    v_service       record;
+    v_current_slot  time;
+    v_slots         time[]  := '{}';
+    v_over_capacity boolean := false;
+begin
+    for v_service in
+        select s.start_time, s.end_time, rt.slot_duration
+        from services s
+                 join restaurants rt on rt.id = s.restaurant
+        where s.restaurant = p_restaurant_id
+          and s.day_of_week = extract(isodow from p_date)::int
+        order by s.start_time
+        loop
+            v_current_slot := v_service.start_time;
+            while v_current_slot < v_service.end_time loop
+                    if array_length(v_slots, 1) is null then
+                        v_over_capacity := not is_restaurant_has_capacity_for_service(
+                                p_restaurant_id, p_date,
+                                v_service.start_time, v_service.end_time,
+                                p_number_of_guests);
+                    end if;
+                    v_slots        := array_append(v_slots, v_current_slot);
+                    v_current_slot := v_current_slot + (v_service.slot_duration || ' minutes')::interval;
+                end loop;
+        end loop;
+
+    return row(v_slots, is_restaurant_closed(p_restaurant_id, p_date), v_over_capacity)::reservation_edit_data;
+end;
+$$ language plpgsql security definer;
+
+grant execute on function get_slots_for_date(integer, date, integer) to authenticated;
+
+
+/*****************************************************************************
+ Met à jour une réservation. Si elle était confirmée, elle repasse à pending
+******************************************************************************/
+
+drop function if exists update_reservation(integer, timestamp, integer, text);
+
+create or replace function update_reservation(
+    p_reservation_id   integer,
+    p_datetime         timestamp,
+    p_number_of_guests integer,
+    p_special_requests text default null
+)
+    returns void as
+$$
+declare
+    v_old_status status_type;
+begin
+    if not exists (
+        select 1 from reservations r join users u on u.id = r.client
+        where r.id = p_reservation_id and u.email = auth.email()
+    ) then
+        raise exception 'Réservation introuvable.';
+    end if;
+
+    select status into v_old_status from reservations where id = p_reservation_id;
+
+    if v_old_status = 'confirmed' then
+        delete from reservation_tables where reservation = p_reservation_id;
+        update reservations
+        set datetime         = p_datetime,
+            number_of_guests = p_number_of_guests,
+            special_requests = p_special_requests,
+            status           = 'pending'
+        where id = p_reservation_id;
+    else
+        update reservations
+        set datetime         = p_datetime,
+            number_of_guests = p_number_of_guests,
+            special_requests = p_special_requests
+        where id = p_reservation_id;
+    end if;
+end;
+$$ language plpgsql security definer;
+
+grant execute on function update_reservation(integer, timestamp, integer, text) to authenticated;
+
+grant select on reservation_tables to authenticated;
+grant select on reservations to authenticated;
+
+
+

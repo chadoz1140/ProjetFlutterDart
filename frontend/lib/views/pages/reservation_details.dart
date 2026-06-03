@@ -3,16 +3,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:prbd_2526_c01/providers/client_state_provider.dart';
 import 'package:prbd_2526_c01/providers/reference_time_provider.dart';
+import 'package:prbd_2526_c01/views/widgets/cancel_reservation.dart';
+import 'package:prbd_2526_c01/views/widgets/simulated_time_dialog.dart';
 import '../../core/widgets/data_error_widget.dart';
+import '../../models/status.dart';
 
-class ReservationDetails extends ConsumerStatefulWidget{
-
+class ReservationDetails extends ConsumerStatefulWidget {
   const ReservationDetails({super.key});
+
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() => _ReservationDetailsState();
-
+  ConsumerState<ReservationDetails> createState() => _ReservationDetailsState();
 }
-
 
 class _ReservationDetailsState extends ConsumerState<ReservationDetails> {
 
@@ -30,7 +31,6 @@ class _ReservationDetailsState extends ConsumerState<ReservationDetails> {
     final clientState = ref.watch(clientStateProvider);
     final clientNotifier = ref.read(clientStateProvider.notifier);
     const List<String> days = ["lun.", "mar.", "mer.", "jeu.", "ven.", "sam.", "dim."];
-
     final theme = Theme.of(context);
     final now = ref.watch(referenceTimeProvider);
 
@@ -46,20 +46,18 @@ class _ReservationDetailsState extends ConsumerState<ReservationDetails> {
       data: (state) {
         final reservation = state.currentReservation;
         if (reservation == null) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
+          return const Scaffold(body: Center(child: CircularProgressIndicator()));
         }
+
+        final canEdit = reservation.status == Status.pending ||
+            (reservation.status == Status.confirmed &&
+                reservation.dateTime.isAfter(now));
+
         return Scaffold(
           appBar: AppBar(
             leading: IconButton(
               icon: const Icon(Icons.arrow_back),
-              onPressed: () {
-                Navigator.pushNamed(
-                    context,
-                    '/home'
-                );
-              },
+              onPressed: () => Navigator.pop(context),
             ),
             title: const Text('Détails de la réservation'),
             automaticallyImplyLeading: false,
@@ -67,9 +65,7 @@ class _ReservationDetailsState extends ConsumerState<ReservationDetails> {
               IconButton(
                 icon: const Icon(Icons.refresh),
                 tooltip: 'Rafraîchir les données',
-                onPressed: () {
-                  clientNotifier.refreshReservationDetails();
-                },
+                onPressed: () => clientNotifier.refreshReservationDetails(),
               ),
             ],
             elevation: 2,
@@ -82,17 +78,16 @@ class _ReservationDetailsState extends ConsumerState<ReservationDetails> {
                 child: Padding(
                   padding: const EdgeInsets.only(top: 2.0),
                   child: Tooltip(
-                    message:
-                    'Date/heure simulée utilisée pour les tests.\nCliquez pour modifier.',
-                    child: Text(
-                      DateFormat(
-                        'EEEE dd/MM/yyyy HH:mm',
-                        'fr_FR',
-                      ).format(now),
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: Colors.grey[400],
-                        fontWeight: FontWeight.normal,
+                    message: 'Date/heure simulée utilisée pour les tests.\nCliquez pour modifier.',
+                    child: GestureDetector(
+                      onTap: () => SimulatedTimeDialog.show(context, ref),
+                      child: Text(
+                        DateFormat('EEEE dd/MM/yyyy HH:mm', 'fr_FR').format(now),
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: Colors.grey[400],
+                          fontWeight: FontWeight.normal,
+                        ),
                       ),
                     ),
                   ),
@@ -112,28 +107,17 @@ class _ReservationDetailsState extends ConsumerState<ReservationDetails> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            children: [
-                              const Icon(Icons.restaurant),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(reservation.restaurant.name,
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ],
+                          _infoRow(
+                            Icons.restaurant,
+                            Text(
+                              reservation.restaurant.name,
+                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                            ),
                           ),
                           const SizedBox(height: 8),
                           Row(
                             children: [
-                              const Icon(
-                                Icons.location_on,
-                                size: 16,
-                                color: Colors.grey,
-                              ),
+                              const Icon(Icons.location_on, size: 16, color: Colors.grey),
                               const SizedBox(width: 4),
                               Expanded(
                                 child: Text(
@@ -146,11 +130,7 @@ class _ReservationDetailsState extends ConsumerState<ReservationDetails> {
                           const SizedBox(height: 4),
                           Row(
                             children: [
-                              const Icon(
-                                Icons.phone,
-                                size: 16,
-                                color: Colors.grey,
-                              ),
+                              const Icon(Icons.phone, size: 16, color: Colors.grey),
                               const SizedBox(width: 4),
                               Text(
                                 reservation.restaurant.phone,
@@ -161,63 +141,49 @@ class _ReservationDetailsState extends ConsumerState<ReservationDetails> {
                           const SizedBox(height: 16),
                           const Divider(),
                           const SizedBox(height: 16),
-                          Row(
-                            children: [
-                              const Icon(Icons.calendar_today, size: 20),
-                              const SizedBox(width: 8),
-                              Text('Date: ${days[reservation.dateTime.weekday -
-                                  1]} '
-                                  '${DateFormat('dd/MM/yyyy').format(
-                                  reservation.dateTime)} '
-                              ),
-                            ],
+                          _infoRow(
+                            Icons.calendar_today,
+                            Text('Date: ${days[reservation.dateTime.weekday - 1]} '
+                                '${DateFormat('dd/MM/yyyy').format(reservation.dateTime)} '),
                           ),
                           const SizedBox(height: 8),
-                          Row(
-                            children: [
-                              const Icon(Icons.access_time, size: 20),
-                              const SizedBox(width: 8),
-                              Text(DateFormat('HH:mm').format(
-                                  reservation.dateTime)),
-                            ],
+                          _infoRow(
+                            Icons.access_time,
+                            Text('Heure: ${DateFormat('HH:mm').format(reservation.dateTime)}'),
                           ),
                           const SizedBox(height: 8),
-                          Row(
-                            children: [
-                              const Icon(Icons.people, size: 20),
-                              const SizedBox(width: 8),
-                              Text('Nombre de convives: ${reservation
-                                  .numberOfGuests}'),
-                            ],
+                          _infoRow(
+                            Icons.people,
+                            Text('Nombre de convives: ${reservation.numberOfGuests}'),
                           ),
                           const SizedBox(height: 8),
-                          Row(
-                            children: [
-                              const Icon(Icons.info, size: 20),
-                              const SizedBox(width: 8),
-                              const Text('Statut: '),
-                              Chip(
-                                label: Text(
-                                  reservation.status.value,
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.white,
+                          _infoRow(
+                            Icons.info,
+                            Row(
+                              children: [
+                                const Text('Statut: '),
+                                Chip(
+                                  label: Text(
+                                    reservation.status.value,
+                                    style: const TextStyle(fontSize: 12, color: Colors.white),
                                   ),
+                                  backgroundColor: switch (reservation.status) {
+                                    Status.pending   => Colors.orange,
+                                    Status.confirmed => Colors.green,
+                                    Status.cancelled => Colors.red,
+                                    Status.completed => Colors.blue,
+                                  },
+                                  padding: EdgeInsets.zero,
                                 ),
-                                backgroundColor: const Color(0xFFFF9800),
-                                padding: EdgeInsets.zero,
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                           const SizedBox(height: 16),
                           const Divider(),
                           const SizedBox(height: 8),
-                          Text(
+                          const Text(
                             'Demandes spéciales',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 4),
                           Text(
@@ -229,31 +195,63 @@ class _ReservationDetailsState extends ConsumerState<ReservationDetails> {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: () {},
-                          icon: const Icon(Icons.edit),
-                          label: const Text('Modifier'),
+
+                  if (reservation.status != Status.completed &&
+                      reservation.status != Status.cancelled)
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: canEdit
+                                ? () => Navigator.pushNamed(
+                              context,
+                              '/edit_reservation',
+                              arguments: reservation.id,
+                            )
+                                : null,
+                            icon: const Icon(Icons.edit),
+                            label: const Text('Modifier'),
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: () {},
-                          icon: const Icon(Icons.cancel),
-                          label: const Text('Annuler'),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: () async {
+                              final cancelled = await CancelReservation().show(context);
+                              if (cancelled) {
+                                clientNotifier.cancelReservation(reservation);
+                                if (!context.mounted) return;
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Réservation annulée avec succès'),
+                                    backgroundColor: Colors.black54,
+                                    duration: Duration(seconds: 3),
+                                  ),
+                                );
+                              }
+                            },
+                            icon: const Icon(Icons.cancel),
+                            label: const Text('Annuler'),
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
                 ],
               ),
             ),
           ),
         );
-      }
+      },
+    );
+  }
+
+  Widget _infoRow(IconData icon, Widget child) {
+    return Row(
+      children: [
+        Icon(icon, size: 20),
+        const SizedBox(width: 8),
+        Expanded(child: child),
+      ],
     );
   }
 }

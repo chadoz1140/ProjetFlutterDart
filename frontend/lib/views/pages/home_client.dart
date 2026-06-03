@@ -5,6 +5,8 @@ import 'package:prbd_2526_c01/core/widgets/data_error_widget.dart';
 import 'package:prbd_2526_c01/providers/client_state_provider.dart';
 import 'package:prbd_2526_c01/providers/current_user_provider.dart';
 import 'package:prbd_2526_c01/providers/reference_time_provider.dart';
+import 'package:prbd_2526_c01/views/pages/reservation_details.dart';
+import 'package:prbd_2526_c01/views/pages/reservation_details_manager.dart';
 
 import '../../models/client_state.dart';
 import '../widgets/reservation_card.dart';
@@ -157,12 +159,8 @@ class _HomeClientState extends ConsumerState<HomeClient> {
                           Navigator.pushNamed(
                             context,
                             '/reservation_details',
-                            arguments: reservation.id
-                            //                 pour afficher la page reservation_details sinon elle ne s'affiche pas
-                            //arguments: reservationId
-                            // après << arguments: >> on met l'id de la reservation,
-                            // pour afficher la page reservation_details
-                          );
+                            arguments: reservation.id,
+                          ).then((_) => notifier.refresh());
                         },
                       ),
                     ],
@@ -172,7 +170,9 @@ class _HomeClientState extends ConsumerState<HomeClient> {
             ),
           ),
           floatingActionButton: FloatingActionButton.extended(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.pushReplacementNamed(context, '/searchRestaurants');
+            },
             icon: const Icon(Icons.add),
             label: const Text('Nouvelle réservation'),
           ),
