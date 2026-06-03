@@ -7,7 +7,6 @@ import 'package:prbd_2526_c01/views/widgets/cancel_reservation.dart';
 import '../../core/widgets/data_error_widget.dart';
 import '../../models/reservation.dart';
 import '../../models/status.dart';
-import '../../providers/simulated_time_provider.dart';
 
 class ReservationDetails extends ConsumerStatefulWidget {
   final Reservation reservation;
@@ -27,8 +26,9 @@ class _ReservationDetailsState extends ConsumerState<ReservationDetails> {
   @override
   void initState() {
     super.initState();
-    //Futur car on doit attendre la construction de la page avant de changer de provider
+    //Futur car on dois attendre la construction de la page (initState) avant de changer de state avec getReservation()
     Future(() {
+      //appel getReservation et stocke celui ci dans state.currentReservation
       ref.read(clientStateProvider.notifier).getReservation(widget.reservation.id!);
     });
   }
@@ -175,7 +175,7 @@ class _ReservationDetailsState extends ConsumerState<ReservationDetails> {
                       ),
                       const SizedBox(height: 8),
                       infoRow(Icons.access_time,
-                        Text(DateFormat('HH:mm').format(reservation.dateTime)
+                        Text('Heure: ${DateFormat('HH:mm').format(reservation.dateTime)}'
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -250,6 +250,13 @@ class _ReservationDetailsState extends ConsumerState<ReservationDetails> {
                           final cancelled = await CancelReservation().show(context);
                           if (cancelled){
                             clientNotifier.cancelReservation(reservation);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("Réservation annulé avec succès"),
+                                backgroundColor: Colors.black54,
+                                duration: Duration(seconds: 3),
+                              ),
+                            );
                           }
                         },
                         icon: const Icon(Icons.cancel),

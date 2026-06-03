@@ -6,6 +6,7 @@ import 'package:prbd_2526_c01/providers/client_state_provider.dart';
 import 'package:prbd_2526_c01/providers/current_user_provider.dart';
 import 'package:prbd_2526_c01/providers/reference_time_provider.dart';
 import 'package:prbd_2526_c01/views/pages/reservation_details.dart';
+import 'package:prbd_2526_c01/views/pages/reservation_details_manager.dart';
 
 import '../../models/client_state.dart';
 import '../widgets/reservation_card.dart';

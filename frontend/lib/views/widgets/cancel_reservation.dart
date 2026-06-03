@@ -35,16 +35,6 @@ class CancelReservation extends ConsumerWidget {
         TextButton(
           onPressed: () {
             Navigator.of(context).pop(true);
-
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text("Réservation annulée avec succès"),
-
-
-                backgroundColor: Colors.black54,
-                duration: Duration(seconds: 3),
-              ),
-            );
           },
           style: TextButton.styleFrom(
             foregroundColor: Colors.red,

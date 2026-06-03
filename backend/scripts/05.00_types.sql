@@ -104,3 +104,27 @@ create type restaurant_with_client_info as
    last_reservation_datetime timestamp,
    pending_requests_count    int
 );
+
+drop type if exists table_details cascade;
+
+create type table_details as
+(
+    id int,
+    restaurant restaurant_info,
+    table_number int,
+    capacity int
+);
+
+drop type if exists reservation_details_manager cascade;
+
+create type reservation_details_manager as
+(
+    id integer,
+    datetime timestamp,
+    number_of_guests int,
+    status status_type,
+    special_requests text,
+    client client_info,
+    restaurant restaurant_info,
+    restaurant_tables table_details[]
+);
