@@ -234,7 +234,7 @@ $$
                 join restaurant_managers rm on rm.restaurant = r.restaurant
             where r.id = confirmed_reservation_manager.reservation_id
               and rm.manager = auth.id()
-              and r.status = 'pend'
+              and r.status = 'pending'
         ) then
             raise exception 'Reservation not found or not completable';
         end if;
