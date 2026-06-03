@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:prbd_2526_c01/core/widgets/data.error.widget.dart';
 import 'package:prbd_2526_c01/providers/manager_state_provider.dart';
 import 'package:prbd_2526_c01/providers/reference_time_provider.dart';
+import 'package:prbd_2526_c01/views/pages/reservation_details_manager.dart';
 import 'package:prbd_2526_c01/views/widgets/restaurant_management_reservations_card.dart';
 
 import '../../models/manager_state.dart';
@@ -147,10 +148,13 @@ class _RestaurantManagementReservationsState extends ConsumerState<RestaurantMan
                           RestaurantManagementReservationsCard(
                               reservation: reservation,
                               onTap: () {
-                                Navigator.pushReplacementNamed(
+                                Navigator.push(
                                   context,
-                                  '/reservation_details_manager',
-                                  arguments: reservation.id,
+                                  MaterialPageRoute(
+                                    builder: (_) => ReservationDetailsManager(
+                                        reservation: reservation
+                                    ),
+                                  ),
                                 );
                               },
                           )
