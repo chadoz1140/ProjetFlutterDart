@@ -24,7 +24,16 @@ class ClientStateNotifier extends AbstractAsyncNotifier<ClientState> {
     ref.watch(currentUserProvider);
     try {
       final reservations = await Reservation.getReservations(status: null);
-      return ClientState(reservations: reservations);
+      final restaurants = await Restaurant.getRestaurants(
+        '',
+        resultNumber: maxResultNumber + 1,
+      );
+      return ClientState(
+        reservations: reservations,
+        restaurants: restaurants,
+        searchText: '',
+        hasMoreResults: restaurants.length > maxResultNumber
+      );
     }catch(e, stackTrace) {
       state = AsyncValue.error(
           "Something went wrong \n Please try again later?",
@@ -83,10 +92,11 @@ class ClientStateNotifier extends AbstractAsyncNotifier<ClientState> {
 
   // Restaurants — chercher
   Future<void> search(String text) async {
+    final currentState = state.value ?? ClientState();
     state = AsyncValue.loading();
     try{
       final restaurants = await Restaurant.getRestaurants(text, resultNumber: maxResultNumber + 1);
-      state = AsyncData(state.value!.copyWith(
+      state = AsyncData(currentState.copyWith(
           searchText: text,
           restaurants: restaurants,
           hasMoreResults: restaurants.length > maxResultNumber,
@@ -101,7 +111,7 @@ class ClientStateNotifier extends AbstractAsyncNotifier<ClientState> {
 
   // Refresh page restaurants
   Future<void> refreshRestaurants() async{
-    await search(state.value?.searchText ?? '');
+    await search('');
   }
 
 

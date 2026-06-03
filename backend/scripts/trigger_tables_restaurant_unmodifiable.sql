@@ -14,3 +14,9 @@ create or replace trigger trigger_restaurant_unmodifiable_tables
     on tables
     for each row
     execute function check_restaurant_is_update();
+
+create or replace trigger trigger_restaurant_unmodifiable_services
+    before update of restaurant
+    on services
+    for each row
+execute function check_restaurant_is_update();
