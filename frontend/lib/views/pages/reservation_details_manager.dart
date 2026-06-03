@@ -55,8 +55,9 @@ class _ReservationDetailsManagerState extends ConsumerState<ReservationDetailsMa
           const Scaffold(
             body: Center(child: CircularProgressIndicator()),
           ),
-        data: (state) =>
-            data(state.currentReservation!, theme, now, managerNotifier, days)
+        data: (state) => state.currentReservation == null
+            ? const Scaffold(body: Center(child: CircularProgressIndicator()))
+            : data(state.currentReservation!, theme, now, managerNotifier, days)
     );
   }
     Widget data(
@@ -70,15 +71,7 @@ class _ReservationDetailsManagerState extends ConsumerState<ReservationDetailsMa
         appBar: AppBar(
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
-            onPressed: () {
-              /*
-                back vers la liste des restaurant du manager connecté /homeManager
-                Navigator.pushNamed(
-                  context,
-                  '/homeManager'
-                );
-              */
-            },
+            onPressed: () => Navigator.pop(context),
           ),
           title: const Text('Détails de la réservation'),
           automaticallyImplyLeading: false,

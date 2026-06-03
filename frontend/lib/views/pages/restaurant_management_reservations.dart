@@ -49,7 +49,7 @@ class _RestaurantManagementReservationsState extends ConsumerState<RestaurantMan
         appBar: AppBar(
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
-            onPressed: () {},
+            onPressed: () => Navigator.pop(context),
           ),
           title: Text(restaurant.name),
           automaticallyImplyLeading: false,
@@ -155,7 +155,7 @@ class _RestaurantManagementReservationsState extends ConsumerState<RestaurantMan
                                         reservation: reservation
                                     ),
                                   ),
-                                );
+                                ).then((_) => notifier.refresh());
                               },
                           )
                     ],

@@ -105,3 +105,14 @@ $$ language plpgsql security definer;
 
 grant execute on function get_restaurants(text, int) to authenticated;
 
+/** Récuperer les restaurants du manager **/
+create or replace function get_my_restaurants()
+    returns setof restaurant_info as
+$$
+select get_restaurant_info(rm.restaurant)
+from restaurant_managers rm
+where rm.manager = auth.id();
+$$ language sql security definer;
+
+grant execute on function get_my_restaurants() to authenticated;
+
