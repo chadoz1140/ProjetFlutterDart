@@ -17,7 +17,7 @@ class SystemTime {
   }
 
   static Future<SystemTime> getSystemTime() async {
-    final response = await ApiClient.get('get_system_time');
+    final response = await ApiClient.get('get_system_time', anonymous: true);
     if(response.statusCode != 200) throw Exception('Failed to get system time');
     return SystemTime.fromJson(json.decode(response.body));
   }

@@ -69,11 +69,11 @@ class ClientStateNotifier extends AbstractAsyncNotifier<ClientState> {
   Future<void> getReservation(int reservationId) async{
     /* AsyncValue.loading() consèrve l'ancien state
        donc on est pas obliger de l'initialiser dans une variable (final currentState = state.value ?? ManagerState()) */
-
+    final currentState = state.value ?? ClientState();
     state = const AsyncValue.loading();
     try{
       final reservation = await Reservation.getReservation(reservationId);
-      state = AsyncData(state.value!.copyWith(
+      state = AsyncData(currentState.copyWith(
         currentReservation: reservation,
       ));
     }
