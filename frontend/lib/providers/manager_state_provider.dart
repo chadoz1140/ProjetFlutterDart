@@ -11,7 +11,7 @@ import 'package:prbd_2526_c01/models/restaurant.dart';
 import 'package:prbd_2526_c01/providers/current_user_provider.dart';
 
 final managerStateProvider = AsyncNotifierProvider<ManagerStateNotifier, ManagerState>(
-    () => ManagerStateNotifier(),
+      () => ManagerStateNotifier(),
 );
 
 class ManagerStateNotifier extends AbstractAsyncNotifier<ManagerState> {
@@ -19,8 +19,27 @@ class ManagerStateNotifier extends AbstractAsyncNotifier<ManagerState> {
   // Au démarrage charge les restaurants du manager
   @override
   FutureOr<ManagerState> build() async {
-    return ManagerState();
+    ref.watch(currentUserProvider);
+    final restaurants = await Restaurant.getMyRestaurants();
+    return ManagerState(restaurants: restaurants);
+  }
 
+  // Sélectionne un restaurant et charge ses réservations
+  Future<void> selectRestaurant(Restaurant restaurant) async {
+    final currentState = state.value ?? ManagerState();
+    state = AsyncValue.data(currentState.copyWith(currentRestaurant: restaurant));
+    await getReservationsByRestaurant(restaurant.id, null);
+  }
+
+  // Recharge la liste des restaurants du manager
+  Future<void> refreshRestaurants() async {
+    try {
+      final restaurants = await Restaurant.getMyRestaurants();
+      final currentState = state.value ?? ManagerState();
+      state = AsyncValue.data(currentState.copyWith(restaurants: restaurants));
+    } catch (e, stackTrace) {
+      state = AsyncValue.error("Erreur lors du chargement des restaurants.", stackTrace);
+    }
   }
 
   // Reservations by restaurant
@@ -35,7 +54,7 @@ class ManagerStateNotifier extends AbstractAsyncNotifier<ManagerState> {
     }catch(e, stackTrace) {
       state = AsyncValue.error(
           "Something went wrong loading reservations!",
-           stackTrace);
+          stackTrace);
     }
   }
 

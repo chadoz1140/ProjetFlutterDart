@@ -12,6 +12,7 @@ class Restaurant {
   final String phone;
   final String description;
   final double? rating;
+  final int? priceRange;
   final DateTime? lastReservationDatetime;
   final int? pendingCount;
   final List<Service> services;
@@ -24,6 +25,7 @@ class Restaurant {
     required this.phone,
     required this.description,
     required this.rating,
+    this.priceRange,
     required this.lastReservationDatetime,
     required this.pendingCount,
     required this.services,
@@ -44,6 +46,7 @@ class Restaurant {
       phone: json['phone'],
       description: json['description'] ?? '',
       rating: json['rating'] == null ? null : (json['rating'] as num).toDouble(),
+      priceRange: json['price_range'],
       lastReservationDatetime: json['last_reservation_datetime'] == null
           ? null
           : DateTime.parse(json['last_reservation_datetime']),
@@ -86,7 +89,7 @@ class Restaurant {
 
   static Future<Restaurant> getRestaurantDetails(int restaurantId) async{
     final response = await ApiClient.post(
-      'get_restaurant_details', 
+      'get_restaurant_details',
        body: json.encode({'restaurant_id' : restaurantId})
     );
     if(response.statusCode != 200) {
@@ -94,5 +97,20 @@ class Restaurant {
     }
     final data = json.decode(response.body);
     return Restaurant.fromDetailJson(data);
+  }
+
+  static Future<List<Restaurant>> getMyRestaurants() async{
+    final response = await ApiClient.post(
+      'get_my_restaurants',
+      body: json.encode({}),
+    );
+    if(response.statusCode != 200) {
+      print('GET MY RESTAURANTS ERROR STATUS: ${response.statusCode}');
+      print('GET MY RESTAURANTS ERROR BODY: ${response.body}');
+      throw Exception('Failed to get my restaurants.');
+    }
+    final List<dynamic> data = json.decode(response.body);
+    print('GET MY RESTAURANTS DATA: $data');
+    return data.map((item) => Restaurant.fromJson(item as Map<String, dynamic>)).toList();
   }
 }

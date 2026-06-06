@@ -56,10 +56,12 @@ class RestaurantManagementReservationsCard extends ConsumerWidget{
                       children: [
                         const Icon(Icons.access_time, size: 16),
                         const SizedBox(width: 4),
-                        Text(
-                          _formatDate(reservation.dateTime),
-                          style: TextStyle(fontSize: 14,
-                              color: Colors.grey[600]),
+                        Expanded(
+                          child: Text(
+                            _formatDate(reservation.dateTime),
+                            style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                         const SizedBox(width: 12),
                         const Icon(Icons.people, size: 16),
