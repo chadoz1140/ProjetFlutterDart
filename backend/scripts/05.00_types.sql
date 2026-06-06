@@ -110,11 +110,9 @@ create type initial_reservation_data as
 (
     restaurant  restaurant_info,
     reservation_date date,
-    selected_slot time,
     slots time[],
     restaurant_closed boolean,
-    client_has_reservation_for_all_services boolean, /*pour un seul client 1 seule reservation par service, par restau, par date*/
-    over_capacity boolean
+    client_has_reservation_for_all_services boolean /*pour un seul client 1 seule reservation par service, par restau, par date*/
 );
 
 drop type if exists reservation_edit_data cascade;

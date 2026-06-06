@@ -1,6 +1,5 @@
 import 'package:prbd_2526_c01/models/reservation.dart';
 import 'package:prbd_2526_c01/models/restaurant.dart';
-import 'package:prbd_2526_c01/models/status.dart';
 
 class ClientState {
   // Reservations
@@ -13,6 +12,8 @@ class ClientState {
   final bool restaurantClosed;
   final bool clientHasReservationForAllServices;
   final bool overCapacity;
+  final String? selectedReservationSlot;
+  final int newReservationGuests;
 
   // Restaurants
   final Restaurant? currentRestaurant;
@@ -33,12 +34,17 @@ class ClientState {
     this.availableSlots = const[],
     this.restaurantClosed = false,
     this.clientHasReservationForAllServices = false,
-    this.overCapacity = false
+    this.overCapacity = false,
+    this.selectedReservationSlot,
+    this.newReservationGuests = 2,
   });
 
   ClientState copyWith({
     Reservation? currentReservation,
+    String? selectedReservationSlot,
+    int? newReservationGuests,
     bool clearCurrentReservation = false,
+    bool clearSelectedReservationSlot = false,
     String? reservationStatusFilter,
     List<Reservation>? reservations,
     Restaurant? currentRestaurant,
@@ -68,6 +74,13 @@ class ClientState {
       overCapacity: overCapacity ?? this.overCapacity,
       selectedReservationDate:
       selectedReservationDate ?? this.selectedReservationDate,
+
+      selectedReservationSlot: clearSelectedReservationSlot
+          ? null : (selectedReservationSlot ?? this.selectedReservationSlot),
+
+      newReservationGuests:
+      newReservationGuests ?? this.newReservationGuests,
+
     );
 
   }

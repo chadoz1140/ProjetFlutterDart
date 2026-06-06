@@ -215,11 +215,11 @@ class RestaurantDetailsState extends ConsumerState<RestaurantDetails> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
-                    onPressed: () async {
-                        await clientNotifier.loadNewReservationForm(restaurant.id);
+                      onPressed: () async {
+                        await clientNotifier.loadReservationSlots(now, firstOpening: true);
                         if (!mounted) return;
                         Navigator.pushReplacementNamed(context, '/new_reservation');
-                    },
+                      },
                       icon: const Icon(Icons.add),
                       label: const Text('Réserver'),
                       style: ElevatedButton.styleFrom(
