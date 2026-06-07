@@ -106,12 +106,24 @@ $$ language plpgsql security definer;
 grant execute on function get_restaurants(text, int) to authenticated;
 
 /** Récuperer les restaurants du manager **/
+
+drop function if exists get_my_restaurants();
+
 create or replace function get_my_restaurants()
-    returns setof restaurant_info as
+    returns setof restaurant_manager_info as
 $$
-select get_restaurant_info(rm.restaurant)
-from restaurant_managers rm
-where rm.manager = auth.id();
+select (row(
+    r.id, r.name, r.address, r.city, r.phone, r.description,
+    r.rating, r.price_range,
+    max(res.datetime),
+    coalesce(sum(case when res.status = 'pending' then 1 else 0 end), 0)::int
+    )::restaurant_manager_info).*
+from restaurants r
+         join restaurant_managers rm on rm.restaurant = r.id
+         left join reservations res on res.restaurant = r.id
+where rm.manager = auth.id()
+group by r.id, r.name, r.address, r.city, r.phone, r.description, r.rating, r.price_range
+order by max(res.datetime) desc nulls last, r.name asc;
 $$ language sql security definer;
 
 grant execute on function get_my_restaurants() to authenticated;

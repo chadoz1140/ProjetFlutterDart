@@ -72,6 +72,7 @@ create or replace function get_reservations_by_restaurant(restaurant_id int, p_s
                 join users u on u.id = rm.manager
                 where u.email = auth.email()
            )
+            order by r.datetime desc, r.id desc
 
     $$language sql security definer;
 
