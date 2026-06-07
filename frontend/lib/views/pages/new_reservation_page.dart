@@ -8,7 +8,6 @@ import '../../core/tools/debounce.dart';
 import '../../core/tools/validating_text_editing_controller.dart';
 import '../../core/widgets/data.error.widget.dart';
 import '../../models/client_state.dart';
-import '../widgets/simulated_time_dialog.dart';
 
 class NewReservationPage extends ConsumerStatefulWidget{
   @override
@@ -63,7 +62,8 @@ class _NewReservationPageState extends ConsumerState<NewReservationPage>{
       }) {
 
     final restaurant = state.currentRestaurant!;
-    final reservation = state.currentReservation;
+    // final reservation = state.currentReservation;
+
     final selectedDate = state.selectedReservationDate;
     final now = ref.watch(referenceTimeProvider);
     final minDate = DateTime(now.year, now.month, now.day);
@@ -74,11 +74,9 @@ class _NewReservationPageState extends ConsumerState<NewReservationPage>{
       selectedDate.month,
       selectedDate.day,
     );
-    final numberOfGuests = reservation?.numberOfGuests ?? 2;
     final canGoPreviousDay = selectedDay != null && selectedDay.isAfter(minDate);
-    final selectedSlotText = reservation == null
-        ? null
-        : DateFormat('HH:mm').format(reservation.dateTime);
+    final selectedSlot = state.selectedReservationSlot;
+    final numberOfGuests = state.newReservationGuests;
 
     return Scaffold(
       appBar: AppBar(
@@ -97,7 +95,10 @@ class _NewReservationPageState extends ConsumerState<NewReservationPage>{
             icon: const Icon(Icons.refresh),
             tooltip: 'Rafraîchir les données',
             onPressed: () {
-              notifier.loadNewReservationForm(restaurant.id);
+              _specialRequestsController.clear();
+              if (selectedDate != null) {
+                notifier.loadReservationSlots(selectedDate);
+              }
             },
           ),
         ],
@@ -110,15 +111,12 @@ class _NewReservationPageState extends ConsumerState<NewReservationPage>{
           child: SafeArea(
               child: Padding(
                 padding: const EdgeInsets.only(top: 2),
-                child: GestureDetector(
-                  onTap: () => SimulatedTimeDialog.show(context, ref),
-                  child: Text(
-                    DateFormat('EEEE dd/MM/yyyy HH:mm', 'fr_FR').format(now),
-                    style: TextStyle(
-                      fontSize: 10,
-                      color: Colors.grey[400],
-                      fontWeight: FontWeight.normal,
-                    ),
+                child: Text(
+                  DateFormat('EEEE dd/MM/yyyy HH:mm', 'fr_FR').format(now),
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: Colors.grey[400],
+                    fontWeight: FontWeight.normal,
                   ),
                 ),
               )
@@ -250,10 +248,11 @@ class _NewReservationPageState extends ConsumerState<NewReservationPage>{
                           });
                         },
                         style: OutlinedButton.styleFrom(
-                          backgroundColor: slot.substring(0, 5) == selectedSlotText
+                          backgroundColor: slot == selectedSlot
                               ? theme.colorScheme.primary
                               : null,
-                          foregroundColor: slot.substring(0, 5) == selectedSlotText
+
+                          foregroundColor: slot == selectedSlot
                               ? theme.colorScheme.onPrimary
                               : null,
                         ),
@@ -288,8 +287,7 @@ class _NewReservationPageState extends ConsumerState<NewReservationPage>{
                     ),
                     IconButton(
                       icon: const Icon(Icons.add),
-                      onPressed: numberOfGuests < 10
-                          ? () {
+                      onPressed: () {
                         final newGuests = numberOfGuests + 1;
 
                         notifier.changeNewReservationGuests(newGuests);
@@ -297,8 +295,7 @@ class _NewReservationPageState extends ConsumerState<NewReservationPage>{
                         _capacityDebouncer.call(() {
                           notifier.checkNewReservationOverCapacity(newGuests);
                         });
-                      }
-                          : null,
+                      },
                     ),
                   ],
                 ),
@@ -324,7 +321,7 @@ class _NewReservationPageState extends ConsumerState<NewReservationPage>{
               const SizedBox(height: 32),
 
               ElevatedButton.icon(
-                onPressed: reservation == null
+                onPressed: selectedSlot == null
                     ? null
                     : () => _createReservation(notifier),
                 icon: const Icon(Icons.add),
@@ -401,7 +398,11 @@ class _NewReservationPageState extends ConsumerState<NewReservationPage>{
         content: Text('Réservation créée avec succès'),
       ),
     );
-    Navigator.pushReplacementNamed(context, '/home');
+    Navigator.pushReplacementNamed(
+      context,
+      '/home',
+      arguments: 'pending',
+    );
   }
 
 }

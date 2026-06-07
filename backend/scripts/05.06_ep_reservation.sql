@@ -357,19 +357,27 @@ $$language plpgsql security definer ;
 ****************************************************************************/
 
 drop function if exists is_restaurant_has_capacity_for_service(integer, date, time, time, integer);
-create or replace function is_restaurant_has_capacity_for_service(p_restaurant_id integer, p_date date , p_start_time time, p_end_time time ,p_number_of_guests int default 2)
+create or replace function is_restaurant_has_capacity_for_service(
+    p_restaurant_id integer,
+    p_date date,
+    p_start_time time,
+    p_end_time time,
+    p_number_of_guests integer default 2
+)
     returns bool as
 $$
-declare available_capacity integer;
+declare
+    available_capacity integer;
+    pending_guests integer;
 begin
-
     select coalesce(sum(t.capacity), 0)
     into available_capacity
     from tables t
     where t.restaurant = p_restaurant_id
       and not exists(
         select 1
-        from reservations rs join reservation_tables rt on rs.id = rt.reservation
+        from reservations rs
+                 join reservation_tables rt on rs.id = rt.reservation
         where rt."table" = t.id
           and rs.restaurant = p_restaurant_id
           and rs.datetime::date = p_date
@@ -377,21 +385,29 @@ begin
           and rs.datetime::time < p_end_time
           and rs.status in ('confirmed', 'completed')
     );
-    return available_capacity >= p_number_of_guests;
+
+    select coalesce(sum(rs.number_of_guests), 0)
+    into pending_guests
+    from reservations rs
+    where rs.restaurant = p_restaurant_id
+      and rs.datetime::date = p_date
+      and rs.datetime::time >= p_start_time
+      and rs.datetime::time < p_end_time
+      and rs.status = 'pending';
+
+    return available_capacity >= pending_guests + p_number_of_guests;
 end;
-$$language plpgsql security definer;
+$$ language plpgsql security definer;
 
 
 /***************************************************************************
  Construit les donnees de reservation pour un restaurant et une date donnee
 ****************************************************************************/
 
-drop function if exists build_reservation_slots_data(integer, date, integer);
-
+drop function if exists build_reservation_slots_data(integer, date);
 create or replace function build_reservation_slots_data(
     p_restaurant_id integer,
-    p_date date,
-    p_number_of_guests integer default 2
+    p_date date
 )
     returns initial_reservation_data as
 $$
@@ -400,7 +416,6 @@ declare
     v_service record;
     v_current_slot time;
     v_slots time[] := '{}';
-    v_over_capacity boolean := false;
 begin
     v_reference_time := get_reference_time();
 
@@ -423,16 +438,6 @@ begin
                 v_current_slot := v_service.start_time;
                 while v_current_slot < v_service.end_time loop
                         if (p_date + v_current_slot) >= v_reference_time then
-
-                            if array_length(v_slots, 1) is null then
-                                v_over_capacity := not is_restaurant_has_capacity_for_service(
-                                        p_restaurant_id,
-                                        p_date,
-                                        v_service.start_time,
-                                        v_service.end_time,
-                                        p_number_of_guests
-                                                       );
-                            end if;
                             v_slots := array_append(v_slots, v_current_slot);
                         end if;
                         v_current_slot := v_current_slot + (v_service.slot_duration || ' minutes')::interval;
@@ -442,11 +447,9 @@ begin
     return row(
         get_restaurant_info(p_restaurant_id),
         p_date,
-        v_slots[1],
         v_slots,
         is_restaurant_closed(p_restaurant_id, p_date),
-        is_client_has_reservation_for_all_services(p_restaurant_id, auth.id(), p_date),
-        v_over_capacity
+        is_client_has_reservation_for_all_services(p_restaurant_id, auth.id(), p_date)
         )::initial_reservation_data;
 end;
 $$ language plpgsql security definer;
@@ -456,15 +459,15 @@ $$ language plpgsql security definer;
  Retourne les donnees necessaires au premier affichage de l'ecran
 ****************************************************************************/
 
-drop function if exists get_first_available_reservation_slot(int, int);
-create or replace function get_first_available_reservation_slot(
+drop function if exists get_new_reservation_data(integer, date);
+create or replace function get_new_reservation_data(
     p_restaurant_id integer,
-    number_of_guests integer default 2
+    p_date date default null
 )
     returns initial_reservation_data as
 $$
 declare
-    v_reference_time timestamp;
+    v_date date;
 begin
     perform auth.check_logged();
 
@@ -472,44 +475,19 @@ begin
         raise exception 'Access denied';
     end if;
 
-    v_reference_time := get_reference_time();
-
-    return build_reservation_slots_data(
-            p_restaurant_id,
-            v_reference_time::date,
-            number_of_guests
-           );
-end;
-$$ language plpgsql security definer;
-grant execute on function get_first_available_reservation_slot(int, int) to authenticated;
-
-/***************************************************************************
- Retourne les creneaux disponibles pour une date choisie
-****************************************************************************/
-
-drop function if exists get_reservation_slots(integer, date, integer);
-create or replace function get_reservation_slots(
-    p_restaurant_id integer,
-    p_date date,
-    p_number_of_guests integer default 2
-)
-    returns initial_reservation_data as
-$$
-begin
-    perform auth.check_logged();
-
-    if auth.role() != 'client' then
-        raise exception 'Access denied';
+    if p_date is null then
+        v_date := get_reference_time()::date;
+    else
+        v_date := p_date;
     end if;
 
     return build_reservation_slots_data(
             p_restaurant_id,
-            p_date,
-            p_number_of_guests
+            v_date
            );
 end;
 $$ language plpgsql security definer;
-grant execute on function get_reservation_slots(integer, date, integer) to authenticated;
+grant execute on function get_new_reservation_data(integer, date) to authenticated;
 
 /***************************************************************************
  Verifie si le nombre de convives depasse la capacite disponible
@@ -603,7 +581,6 @@ begin
     return get_reservation_details(v_reservation_id);
 end;
 $$ language plpgsql security definer;
-
 grant execute on function save_reservation(integer, timestamp, integer, text) to authenticated;
 
 /********************************************************

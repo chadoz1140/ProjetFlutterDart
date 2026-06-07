@@ -20,6 +20,17 @@ class _HomeClientState extends ConsumerState<HomeClient> {
 
   String _selectedStatus = 'all';
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    final status = ModalRoute.of(context)?.settings.arguments as String?;
+
+    if (status != null) {
+      _selectedStatus = status;
+    }
+  }
+
   void _logout() {
     ref.read(currentUserProvider.notifier).logout();
     Navigator.pushReplacementNamed(context, '/login');
