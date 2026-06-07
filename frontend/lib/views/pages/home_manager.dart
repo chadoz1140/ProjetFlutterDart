@@ -109,7 +109,7 @@ class HomeManager extends ConsumerWidget {
                 restaurant: restaurant,
                 onTap: () {
                   notifier.selectRestaurant(restaurant);
-                  Navigator.pushNamed(context, '/myRestantReservations')
+                  Navigator.pushNamed(context, '/myRestaurantReservations')
                       .then((_) => notifier.refreshRestaurants());
                 },
               ),

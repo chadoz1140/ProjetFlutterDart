@@ -4,10 +4,10 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:prbd_2526_c01/core/tools/abstract_async_notifier.dart';
-import 'package:prbd_2526_c01/models/client_state.dart';
 import 'package:prbd_2526_c01/models/manager_state.dart';
 import 'package:prbd_2526_c01/models/reservation.dart';
 import 'package:prbd_2526_c01/models/restaurant.dart';
+import 'package:prbd_2526_c01/models/restaurant_tables.dart';
 import 'package:prbd_2526_c01/providers/current_user_provider.dart';
 
 final managerStateProvider = AsyncNotifierProvider<ManagerStateNotifier, ManagerState>(
@@ -140,6 +140,69 @@ class ManagerStateNotifier extends AbstractAsyncNotifier<ManagerState> {
           "Something went wrong!\nPlease try again later.",
           StackTrace.current
       );
+    }
+  }
+
+  // Liste tables
+  Future<void> getTablesByRestaurant(int restaurantId) async {
+      final currentState = state.value ?? ManagerState();
+      state = const AsyncValue.loading();
+      try {
+        final tables = await RestaurantTables.getTablesByRestaurant(restaurantId);
+        state = AsyncValue.data(currentState.copyWith(
+          tables : tables,
+      ));
+
+    }catch(e, stackTrace) {
+      state = AsyncValue.error(
+      "Something went wrong loading reservations!",
+      stackTrace);
+    }
+  }
+
+  // Refresh la liste des tables
+  Future<void> refreshTables() async {
+    final restaurantId = state.value?.currentRestaurant?.id;
+    if(restaurantId == null) return;
+    return getTablesByRestaurant(restaurantId);
+  }
+
+  // add table
+  Future<void> addTable({
+    required int tableNumber,
+    required int capacity,
+  }) async {
+    final restaurantId = state.value?.currentRestaurant?.id;
+    if (restaurantId == null) return;
+    try {
+      await RestaurantTables.addTable(
+        restaurantId: restaurantId,
+        tableNumber: tableNumber,
+        capacity: capacity,
+      );
+      // recharge la liste
+      await refreshTables();
+    } catch (e, stackTrace) {
+      state = AsyncValue.error("Something went wrong!", stackTrace);
+    }
+  }
+
+  // update table
+  Future<void> updateTable({
+    required int tableId,
+    required int tableNumber,
+    required int capacity,
+  }) async {
+    try {
+      await RestaurantTables.updateTable(
+        tableId: tableId,
+        tableNumber: tableNumber,
+        capacity: capacity,
+      );
+      // recharge la liste
+      await refreshTables();
+    } catch (e, stackTrace) {
+      state = AsyncValue.error("Something went wrong!", stackTrace);
     }
   }
 }

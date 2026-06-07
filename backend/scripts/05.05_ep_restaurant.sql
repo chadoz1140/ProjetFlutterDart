@@ -112,19 +112,32 @@ drop function if exists get_my_restaurants();
 create or replace function get_my_restaurants()
     returns setof restaurant_manager_info as
 $$
-select (row(
-    r.id, r.name, r.address, r.city, r.phone, r.description,
-    r.rating, r.price_range,
-    max(res.datetime),
-    coalesce(sum(case when res.status = 'pending' then 1 else 0 end), 0)::int
-    )::restaurant_manager_info).*
-from restaurants r
-         join restaurant_managers rm on rm.restaurant = r.id
-         left join reservations res on res.restaurant = r.id
-where rm.manager = auth.id()
-group by r.id, r.name, r.address, r.city, r.phone, r.description, r.rating, r.price_range
-order by max(res.datetime) desc nulls last, r.name asc;
-$$ language sql security definer;
+begin
+    -- Vérifie que l'utilisateur est connecté
+    perform auth.check_logged();
 
-grant execute on function get_my_restaurants() to authenticated;
+    -- Vérifie que c'est bien un manager
+    if auth.role() != 'manager' then
+        raise exception 'Access denied';
+    end if;
+
+    -- Retourne les données
+    return query
+        select (row(
+            r.id, r.name, r.address, r.city, r.phone, r.description,
+            r.rating, r.price_range,
+            max(res.datetime),
+            coalesce(sum(case when res.status = 'pending' then 1 else 0 end), 0)::int
+            )::restaurant_manager_info).*
+        from restaurants r
+                 join restaurant_managers rm on rm.restaurant = r.id
+                 left join reservations res on res.restaurant = r.id
+        where rm.manager = auth.id()
+        group by r.id, r.name, r.address, r.city, r.phone, r.description, r.rating, r.price_range
+        order by max(res.datetime) desc nulls last, r.name asc;
+
+end;
+$$ language plpgsql security definer;
+
+grant execute on function get_my_restaurants() to manager;
 

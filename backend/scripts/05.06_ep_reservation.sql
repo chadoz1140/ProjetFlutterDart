@@ -111,7 +111,7 @@ create or replace function get_reservations_details_manager(reservation_id int)
 
     $$language sql security definer ;
 
-grant execute on function get_reservations_details_manager(int) to authenticated;
+grant execute on function get_reservations_details_manager(int) to manager;
 
 /*Annule une réservation*/
 
