@@ -55,9 +55,9 @@ class _NewReservationPageState extends ConsumerState<NewReservationPage>{
   }
 
   Widget data(
-      ThemeData theme,
+       ThemeData theme,
       ClientState state,
-      ClientStateNotifier notifier, {
+      ClientStateNotifier notifier,{
         bool isLoading = false,
       }) {
 

@@ -8,6 +8,7 @@ import 'package:prbd_2526_c01/models/client_state.dart';
 import 'package:prbd_2526_c01/models/manager_state.dart';
 import 'package:prbd_2526_c01/models/reservation.dart';
 import 'package:prbd_2526_c01/models/restaurant.dart';
+import 'package:prbd_2526_c01/models/service.dart';
 import 'package:prbd_2526_c01/providers/current_user_provider.dart';
 
 final managerStateProvider = AsyncNotifierProvider<ManagerStateNotifier, ManagerState>(
@@ -136,6 +137,55 @@ class ManagerStateNotifier extends AbstractAsyncNotifier<ManagerState> {
 
     }
     catch(e){
+      state = AsyncValue.error(
+          "Something went wrong!\nPlease try again later.",
+          StackTrace.current
+      );
+    }
+  }
+
+  Future<void>getServices(int restaurantId) async {
+    final currentState = state.value ?? ManagerState();
+    state = const AsyncLoading();
+    try{
+      final services = await Service.getServiceInfoByRestaurantId(restaurantId);
+
+
+      final canDeleteServices = <int, bool>{};
+      for (final service in services) {
+        canDeleteServices[service.id] =
+          await Service.canDeleteService(service.id);
+      }
+      state = AsyncData(currentState.copyWith(
+        services: services,
+        canDeleteServices: canDeleteServices,
+      ));
+    }catch(e){
+      state = AsyncValue.error(
+          "Something went wrong!\nPlease try again later.",
+          StackTrace.current
+      );
+    }
+  }
+
+
+  Future<bool>canDeleteService(int serviceId) async{
+    final canDelete = await Service.canDeleteService(serviceId);
+    return canDelete;
+  }
+
+  Future<void>deleteService(int serviceId) async{
+    final currentState = state.value ?? ManagerState();
+    state = const AsyncLoading();
+
+    try{
+      await Service.deleteService(serviceId);
+
+      final services = List<Service>.from(currentState.services);
+      services.removeWhere((service) => service.id == serviceId);
+
+      state = AsyncData(currentState.copyWith(services: services));
+    }catch(e){
       state = AsyncValue.error(
           "Something went wrong!\nPlease try again later.",
           StackTrace.current

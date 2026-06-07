@@ -13,6 +13,7 @@ import '../views/pages/new_reservation_page.dart';
 import '../views/pages/reservation_details.dart';
 import '../views/pages/restaurant_details.dart';
 import '../views/pages/restaurant_management_reservations.dart';
+import '../views/pages/restaurant_management_services.dart';
 
 class MyApp extends ConsumerWidget{
   const MyApp({super.key});
@@ -39,6 +40,7 @@ class MyApp extends ConsumerWidget{
         '/new_reservation': (context) => NewReservationPage(),
         '/myRestantReservations' : (context) => RestaurantManagementReservations(),
         '/edit_reservation'     : (context) =>  EditReservationPage(),
+        '/RestaurantManagementServices' : (context) => RestaurantManagementServices(),
 
       },
     );
