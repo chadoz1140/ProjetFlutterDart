@@ -5,9 +5,6 @@ import 'package:prbd_2526_c01/core/widgets/data_error_widget.dart';
 import 'package:prbd_2526_c01/providers/client_state_provider.dart';
 import 'package:prbd_2526_c01/providers/current_user_provider.dart';
 import 'package:prbd_2526_c01/providers/reference_time_provider.dart';
-import 'package:prbd_2526_c01/views/pages/reservation_details.dart';
-import 'package:prbd_2526_c01/views/pages/reservation_details_manager.dart';
-
 import '../../models/client_state.dart';
 import '../widgets/reservation_card.dart';
 
@@ -73,8 +70,8 @@ class _HomeClientState extends ConsumerState<HomeClient> {
             icon: const Icon(Icons.refresh),
             tooltip: 'Rafraîchir les données',
             onPressed: () {
-              setState(() => _selectedStatus = 'all');
-              notifier.refresh();
+              final status = _selectedStatus == 'all' ? null : _selectedStatus;
+              notifier.getReservations(status);
             },
           ),
           IconButton(
@@ -171,8 +168,11 @@ class _HomeClientState extends ConsumerState<HomeClient> {
                             context,
                             '/reservation_details',
                             arguments: reservation.id,
-                          ).then((_) => notifier.refresh());
-                        },
+                          ).then((_) {
+                              final status = _selectedStatus == 'all' ? null : _selectedStatus;
+                              notifier.getReservations(status);
+                            });
+                         },
                       ),
                     ],
                   ),

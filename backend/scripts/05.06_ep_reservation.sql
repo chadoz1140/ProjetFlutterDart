@@ -72,6 +72,7 @@ create or replace function get_reservations_by_restaurant(restaurant_id int, p_s
                 join users u on u.id = rm.manager
                 where u.email = auth.email()
            )
+            order by r.datetime desc, r.id desc
 
     $$language sql security definer;
 
@@ -110,7 +111,7 @@ create or replace function get_reservations_details_manager(reservation_id int)
 
     $$language sql security definer ;
 
-grant execute on function get_reservations_details_manager(int) to authenticated;
+grant execute on function get_reservations_details_manager(int) to manager;
 
 /*Annule une réservation*/
 

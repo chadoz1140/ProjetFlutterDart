@@ -4,6 +4,7 @@ import 'package:prbd_2526_c01/views/pages/restaurant_management_services.dart';
 
 import '../../providers/manager_state_provider.dart';
 import '../pages/restaurant_management_reservations.dart';
+import '../pages/tables_management.dart';
 
 class ManagerBottomNavigation extends StatelessWidget {
   final int currentIndex;
@@ -20,7 +21,7 @@ class ManagerBottomNavigation extends StatelessWidget {
     return BottomNavigationBar(
       type: BottomNavigationBarType.fixed,
       currentIndex: currentIndex,
-      onTap: (index) async {
+      onTap: (index) {
         if (index == currentIndex) return;
         if (index == 0) {
           Navigator.pushReplacement(
@@ -47,7 +48,7 @@ class ManagerBottomNavigation extends StatelessWidget {
             context,
             PageRouteBuilder(
               pageBuilder: (context, animation, secondaryAnimation) =>
-                  RestaurantManagementReservations(),
+                  RestaurantManagementTables(),
               transitionDuration: Duration.zero,
               reverseTransitionDuration: Duration.zero,
             ),

@@ -2,6 +2,7 @@
 import 'package:prbd_2526_c01/models/reservation.dart';
 import 'package:prbd_2526_c01/models/restaurant.dart';
 import 'package:prbd_2526_c01/models/service.dart';
+import 'package:prbd_2526_c01/models/restaurant_tables.dart';
 
 class ManagerState {
   final Reservation? currentReservation;
@@ -10,6 +11,7 @@ class ManagerState {
   final List<Restaurant> restaurants;
   final List<Service>services;
   final Map<int, bool>canDeleteServices;
+  final List<RestaurantTables> tables;
 
   ManagerState({
     this.currentReservation,
@@ -18,6 +20,7 @@ class ManagerState {
     this.restaurants = const[],
     this.services = const[],
     this.canDeleteServices = const {},
+    this.tables = const[]
   });
 
   ManagerState copyWith({
@@ -27,6 +30,7 @@ class ManagerState {
     List<Restaurant>? restaurants,
     List<Service>? services,
     Map<int, bool>? canDeleteServices,
+    List<RestaurantTables>? tables,
   }) {
     return ManagerState(
       currentReservation: currentReservation ?? this.currentReservation,
@@ -34,7 +38,8 @@ class ManagerState {
       currentRestaurant: currentRestaurant ?? this.currentRestaurant,
       restaurants: restaurants ?? this.restaurants,
       services: services ?? this.services,
-      canDeleteServices: canDeleteServices ?? this.canDeleteServices
+      canDeleteServices: canDeleteServices ?? this.canDeleteServices,
+      tables: tables ?? this.tables,
     );
   }
 
