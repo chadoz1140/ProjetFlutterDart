@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
-import 'package:intl/intl.dart';
 import 'package:prbd_2526_c01/core/services/api_client.dart';
 import 'package:prbd_2526_c01/models/restaurant.dart';
 import 'package:prbd_2526_c01/models/restaurant_tables.dart';
@@ -282,63 +281,34 @@ class Reservation{
     }
   }
 
-  static Reservation? fromInitialReservationJson(
-      Map<String, dynamic> json,
-      int numberOfGuests,
-      ) {
-    final String? selectedSlot = json['selected_slot'];
 
-    if (selectedSlot == null) {
-      return null;
+
+
+
+  static Future<Map<String, dynamic>>getNewReservationData(int restaurantId, DateTime? date)async{
+    String? dateText;
+    if (date != null) {
+      dateText = DateFormat('yyyy-MM-dd').format(date);
     }
-
-    final String reservationDate = json['reservation_date'];
-
-    return Reservation(
-      restaurant: Restaurant.fromJson(json['restaurant']),
-      dateTime: DateTime.parse('$reservationDate $selectedSlot'),
-      numberOfGuests: numberOfGuests,
-      status: Status.pending,
-    );
-  }
-
-  static Future<Map<String, dynamic>> getFirstAvailableReservationSlot(int restaurantId, int numberOfGuests) async{
-    final response = await ApiClient.post('get_first_available_reservation_slot',
-        body: json.encode(
-            {'p_restaurant_id' : restaurantId, 'number_of_guests' : numberOfGuests}
-        )
-    );
-    if (response.statusCode != 200) {
-      print('GET RESTAURANTS ERROR STATUS: ${response.statusCode}');
-      print('GET RESTAURANTS ERROR BODY: ${response.body}');
-      throw Exception('Failed to get restaunts');
-    }
-    final decodedBody = json.decode(response.body);
-    final data = Map<String, dynamic>.from(decodedBody);
-    return data;
-  }
-
-  static Future<Map<String, dynamic>> getReservationSlots(int restaurantId, DateTime date, int numberOfGuests,) async {
-    final dateText = DateFormat('yyyy-MM-dd').format(date);
 
     final response = await ApiClient.post(
-      'get_reservation_slots',
+      'get_new_reservation_data',
       body: json.encode({
         'p_restaurant_id': restaurantId,
         'p_date': dateText,
-        'p_number_of_guests': numberOfGuests,
       }),
     );
 
     if (response.statusCode != 200) {
-      print('GET RESERVATION SLOTS ERROR STATUS: ${response.statusCode}');
-      print('GET RESERVATION SLOTS ERROR BODY: ${response.body}');
-      throw Exception('Failed to get reservation slots');
+      print('GET NEW RESERVATION DATA STATUS: ${response.statusCode}');
+      print('GET NEW RESERVATION DATA BODY: ${response.body}');
+      throw Exception('Failed to load new reservation data');
     }
 
     final decodedBody = json.decode(response.body);
-    final data = Map<String, dynamic>.from(decodedBody);
-    return data;
+
+    return Map<String, dynamic>.from(decodedBody);
+
   }
 
   static Future<bool> checkReservationOverCapacity( int restaurantId, DateTime reservationDateTime, int numberOfGuests,) async {
