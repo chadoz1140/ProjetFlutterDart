@@ -125,7 +125,7 @@ begin
     return query
         select (row(
             r.id, r.name, r.address, r.city, r.phone, r.description,
-            r.rating, r.price_range,
+            r.rating, r.price_range,r.slot_duration,
             max(res.datetime),
             coalesce(sum(case when res.status = 'pending' then 1 else 0 end), 0)::int
             )::restaurant_manager_info).*
@@ -133,7 +133,7 @@ begin
                  join restaurant_managers rm on rm.restaurant = r.id
                  left join reservations res on res.restaurant = r.id
         where rm.manager = auth.id()
-        group by r.id, r.name, r.address, r.city, r.phone, r.description, r.rating, r.price_range
+        group by r.id, r.name, r.address, r.city, r.phone, r.description, r.rating, r.price_range,r.slot_duration
         order by max(res.datetime) desc nulls last, r.name asc;
 
 end;

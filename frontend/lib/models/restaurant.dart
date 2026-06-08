@@ -16,6 +16,7 @@ class Restaurant {
   final DateTime? lastReservationDatetime;
   final int? pendingCount;
   final List<Service> services;
+  final int? slotDuration;
 
   Restaurant({
     required this.id,
@@ -29,6 +30,7 @@ class Restaurant {
     required this.lastReservationDatetime,
     required this.pendingCount,
     required this.services,
+    this.slotDuration
   });
 
   @override
@@ -52,6 +54,7 @@ class Restaurant {
           : DateTime.parse(json['last_reservation_datetime']),
       pendingCount: json['pending_requests_count'] ?? 0,
       services: [],
+      slotDuration: json['slot_duration'],
     );
   }
 
@@ -69,6 +72,7 @@ class Restaurant {
             : DateTime.parse(json['last_reservation_datetime']),
         pendingCount: json['pending_requests_count'] ?? 0,
         services: (json['services'] as List).map((s) => Service.fromJson(s)).toList(),
+        slotDuration: json['slot_duration'],
     );
   }
 

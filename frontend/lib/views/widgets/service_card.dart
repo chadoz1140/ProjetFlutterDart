@@ -8,14 +8,15 @@ class ServiceCard extends StatelessWidget{
   final List<Service> services;
   final Map<int, bool>canDeleteServices;
   final Future<void>Function(int) onDelete;
-
+  final void Function(Service) onEdit;
 
   const ServiceCard({
     super.key,
     required this.dayOfWeek,
     required this.services,
     required this.canDeleteServices,
-    required this.onDelete
+    required this.onDelete,
+    required this.onEdit
   });
 
 
@@ -58,7 +59,9 @@ class ServiceCard extends StatelessWidget{
             children: [
               IconButton(
                 icon: const Icon(Icons.edit),
-                onPressed: () {},
+                onPressed: () {
+                  onEdit(services.first);
+                },
               ),
               if(canDeleteServices[services.first.id] == true)
                 IconButton(
@@ -112,7 +115,9 @@ class ServiceCard extends StatelessWidget{
                 children: [
                   IconButton(
                     icon: const Icon(Icons.edit),
-                    onPressed: () {},
+                    onPressed: () {
+                      onEdit(service);
+                    },
                   ),
                   if(canDeleteServices[service.id] == true)
                     IconButton(
