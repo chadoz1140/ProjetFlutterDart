@@ -16,6 +16,7 @@ import '../views/pages/new_reservation_page.dart';
 import '../views/pages/reservation_details.dart';
 import '../views/pages/restaurant_details.dart';
 import '../views/pages/restaurant_management_reservations.dart';
+import '../views/pages/restaurant_management_services.dart';
 
 class MyApp extends ConsumerWidget{
   const MyApp({super.key});
@@ -42,6 +43,8 @@ class MyApp extends ConsumerWidget{
         '/new_reservation': (context) => NewReservationPage(),
         '/myRestaurantReservations' : (context) => RestaurantManagementReservations(),
         '/edit_reservation'     : (context) =>  EditReservationPage(),
+        '/RestaurantManagementServices' : (context) => RestaurantManagementServices(),
+
         '/add_edit_table': (context) {
           final table = ModalRoute.of(context)?.settings.arguments as RestaurantTables?;
           return AddEditTable(table: table);

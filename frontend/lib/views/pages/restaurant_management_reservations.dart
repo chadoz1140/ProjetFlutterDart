@@ -5,10 +5,8 @@ import 'package:prbd_2526_c01/core/widgets/data.error.widget.dart';
 import 'package:prbd_2526_c01/providers/manager_state_provider.dart';
 import 'package:prbd_2526_c01/providers/reference_time_provider.dart';
 import 'package:prbd_2526_c01/views/pages/reservation_details_manager.dart';
-import 'package:prbd_2526_c01/views/pages/tables_management.dart';
 import 'package:prbd_2526_c01/views/widgets/manager_bottom_navigation.dart';
 import 'package:prbd_2526_c01/views/widgets/restaurant_management_reservations_card.dart';
-
 import '../../models/manager_state.dart';
 import '../widgets/simulated_time_dialog.dart';
 
@@ -169,6 +167,7 @@ class _RestaurantManagementReservationsState extends ConsumerState<RestaurantMan
           ),
         ),
         bottomNavigationBar: ManagerBottomNavigation(currentIndex: 0, context: context),
+
       );
     }
   }

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:prbd_2526_c01/views/pages/restaurant_management_services.dart';
 
+import '../../providers/manager_state_provider.dart';
 import '../pages/restaurant_management_reservations.dart';
 import '../pages/tables_management.dart';
 
@@ -35,7 +38,7 @@ class ManagerBottomNavigation extends StatelessWidget {
             context,
             PageRouteBuilder(
               pageBuilder: (context, animation, secondaryAnimation) =>
-                  RestaurantManagementReservations(),
+                  RestaurantManagementServices(),
               transitionDuration: Duration.zero,
               reverseTransitionDuration: Duration.zero,
             ),
