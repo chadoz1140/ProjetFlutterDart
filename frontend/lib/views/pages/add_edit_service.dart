@@ -82,7 +82,7 @@ bool _checkingBackend = false;
           ),
           IconButton(
             tooltip: 'Rafraîchir',
-            onPressed: () => {},
+            onPressed: _refreshForm,
             icon: const Icon(Icons.refresh),
           ),
         ],
@@ -423,6 +423,36 @@ bool _checkingBackend = false;
 
     Navigator.pop(context);
 
+  }
+
+  void _refreshForm() {
+    final service = widget.service;
+
+    setState(() {
+      _dayOfWeek = service?.dayOfWeek ?? 1;
+
+      _startHour = service == null
+          ? null
+          : int.parse(service.startTime.split(':')[0]);
+
+      _startMinute = service == null
+          ? null
+          : int.parse(service.startTime.split(':')[1]);
+
+      _endHour = service == null
+          ? null
+          : int.parse(service.endTime.split(':')[0]);
+
+      _endMinute = service == null
+          ? null
+          : int.parse(service.endTime.split(':')[1]);
+
+      _startHourError = null;
+      _endHourError = null;
+      _timeError = null;
+      _backendError = null;
+      _checkingBackend = false;
+    });
   }
 
 }
