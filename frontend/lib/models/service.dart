@@ -73,5 +73,48 @@ class Service {
     }
   }
 
+  static Future<String?> checkServiceBusinessRules(int restaurantId, int dayOfWeek, String startTime, String endTime, int? serviceId) async {
+    final response = await ApiClient.post(
+      'check_service_business_rules',
+      body: json.encode({
+        'p_restaurant_id': restaurantId,
+        'p_day_of_week': dayOfWeek,
+        'p_start_time': startTime,
+        'p_end_time': endTime,
+        'p_id_service': serviceId,
+      }),
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 204) {
+      return null;
+    }
+
+    final error = json.decode(response.body);
+    return error['message'];
+  }
+
+
+  static Future<Service> saveService(int? serviceId, int restaurantId, int dayOfWeek, String startTime, String endTime,) async {
+    final response = await ApiClient.post(
+      'save_service',
+      body: json.encode({
+        'id_service': serviceId,
+        'id_restaurant': restaurantId,
+        'day_of_week': dayOfWeek,
+        'start_time': startTime,
+        'end_time': endTime,
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      final error = json.decode(response.body);
+      throw Exception(error['message']);
+    }
+
+    final data = json.decode(response.body);
+    return Service.fromJson(data);
+  }
+
+
 
 }

@@ -255,4 +255,34 @@ class ManagerStateNotifier extends AbstractAsyncNotifier<ManagerState> {
       state = AsyncValue.error("Something went wrong!", stackTrace);
     }
   }
+
+
+  Future<String?> checkServiceBusinessRules(int restaurantId, int dayOfWeek, String startTime, String endTime, int? serviceId,) async {
+    final error = await Service.checkServiceBusinessRules(
+      restaurantId,
+      dayOfWeek,
+      startTime,
+      endTime,
+      serviceId,
+    );
+
+    return error;
+  }
+
+  Future<void> saveService(
+      int? serviceId,
+      int restaurantId,
+      int dayOfWeek,
+      String startTime,
+      String endTime,
+      ) async {
+    await Service.saveService(
+      serviceId,
+      restaurantId,
+      dayOfWeek,
+      startTime,
+      endTime,
+    );
+  }
+
 }

@@ -159,6 +159,7 @@ create type restaurant_manager_info as
     description               text,
     rating                    double precision,
     price_range               int,
+    slot_duration             int,
     last_reservation_datetime timestamp,
     pending_requests_count    int
 );

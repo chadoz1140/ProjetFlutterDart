@@ -9,6 +9,7 @@ import '../../providers/reference_time_provider.dart';
 import 'package:prbd_2526_c01/views/widgets/service_card.dart';
 
 import '../widgets/manager_bottom_navigation.dart';
+import 'add_edit_service.dart';
 
 class RestaurantManagementServices extends ConsumerStatefulWidget {
   @override
@@ -141,6 +142,14 @@ class _RestaurantManagmentServicesState extends ConsumerState<RestaurantManageme
                         services: servicesByDay[day] ?? [],
                         canDeleteServices: state.canDeleteServices,
                         onDelete: notifier.deleteService,
+                        onEdit: (service) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => AddEditService(service: service),
+                            ),
+                          ).then((_) => notifier.getServices(restaurant.id));
+                        },
                       ),
                   ],
                 ),
@@ -150,7 +159,10 @@ class _RestaurantManagmentServicesState extends ConsumerState<RestaurantManageme
                 right: 16,
                 child: FloatingActionButton(
                   heroTag: 'services_fab',
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/add_edit_service')
+                        .then((_) => notifier.getServices(restaurant.id));
+                  },
                   child: const Icon(Icons.add),
                 ),
               ),

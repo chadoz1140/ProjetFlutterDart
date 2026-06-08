@@ -8,6 +8,7 @@ import 'package:prbd_2526_c01/views/pages/search_restaurants_page.dart';
 import 'package:prbd_2526_c01/views/pages/signup_page.dart';
 import '../models/restaurant_tables.dart';
 import '../providers/current_user_provider.dart';
+import '../views/pages/add_edit_service.dart';
 import '../views/pages/edit_reservation.dart';
 import '../views/pages/home_manager.dart';
 import '../views/pages/login_page.dart';
@@ -43,6 +44,7 @@ class MyApp extends ConsumerWidget{
         '/myRestaurantReservations' : (context) => RestaurantManagementReservations(),
         '/edit_reservation'     : (context) =>  EditReservationPage(),
         '/RestaurantManagementServices' : (context) => RestaurantManagementServices(),
+        '/add_edit_service' : (context) => AddEditService(),
 
         '/add_edit_table': (context) {
           final table = ModalRoute.of(context)?.settings.arguments as RestaurantTables?;
