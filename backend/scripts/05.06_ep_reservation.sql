@@ -145,8 +145,8 @@ $$
     end;
 $$ language plpgsql security definer;
 
-revoke execute on function public.cancel_reservation(int) from anon;
-grant execute on function public.cancel_reservation(int) to authenticated;
+revoke execute on function cancel_reservation(int) from anon;
+grant execute on function cancel_reservation(int) to authenticated;
 
 ---------- Annule une réservation ----------
 drop function if exists cancel_reservation_manager(reservation_id int);
@@ -220,13 +220,11 @@ grant execute on function completed_reservation_manager(int) to authenticated;
 
 ---------- Confirmé une réservation ----------
 
-drop function if exists confirmed_reservation_manager(reservation_id int);
+drop function if exists confirmed_reservation_manager(reservation_id int, table_ids int[]);
 
-create or replace function confirmed_reservation_manager(reservation_id int)
+create or replace function confirmed_reservation_manager(reservation_id int, table_ids int[])
     returns reservation_details_manager as
 $$
-    declare
-        updated_reservation reservations;
     begin
         if not exists (
             select *
@@ -239,18 +237,23 @@ $$
             raise exception 'Reservation not found or not completable';
         end if;
 
+        /* important de insérer avant de update car si on fais l'inverse le trigger capacité ce déclenchera
+           unnest permet donc de créer une ligne par élément du tableau. Ensuite chaque ligne du tableau
+           est associé à reservation_id, cela permet d'insérer la meme reservation a des tables différentes*/
+        insert into reservation_tables (reservation, "table")
+        select reservation_id, ti
+        from unnest(table_ids) as ti;
+
         update reservations r
         set status = 'confirmed'
-        where r.id = confirmed_reservation_manager.reservation_id
-        returning * into updated_reservation;
+        where r.id = reservation_id;
 
-        return get_reservations_details_manager(updated_reservation.id);
-
+        return get_reservations_details_manager(reservation_id);
     end;
 $$ language plpgsql security definer;
 
-revoke execute on function confirmed_reservation_manager(int) from anon;
-grant execute on function confirmed_reservation_manager(int) to authenticated;
+revoke execute on function confirmed_reservation_manager(int, int[]) from anon;
+grant execute on function confirmed_reservation_manager(int, int[]) to authenticated;
 
 
 /***************************************************************************

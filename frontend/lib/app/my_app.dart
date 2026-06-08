@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:prbd_2526_c01/views/pages/assign_tables.dart';
 import 'package:prbd_2526_c01/views/pages/home_client.dart';
 import 'package:prbd_2526_c01/views/pages/search_restaurants_page.dart';
 import 'package:prbd_2526_c01/views/pages/signup_page.dart';
@@ -39,7 +40,7 @@ class MyApp extends ConsumerWidget{
         '/new_reservation': (context) => NewReservationPage(),
         '/myRestantReservations' : (context) => RestaurantManagementReservations(),
         '/edit_reservation'     : (context) =>  EditReservationPage(),
-
+        '/assign_tables' : (context) => AssignTables()
       },
     );
   }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
+import 'package:prbd_2526_c01/models/manager_state.dart';
 import '../../core/widgets/data.error.widget.dart';
 import '../../models/reservation.dart';
 import '../../models/status.dart';
@@ -9,6 +10,7 @@ import '../../providers/manager_state_provider.dart';
 import '../../providers/reference_time_provider.dart';
 import '../widgets/cancel_reservation.dart';
 import '../widgets/completed_reservation.dart';
+import '../widgets/simulated_time_dialog.dart';
 
 class ReservationDetailsManager extends ConsumerStatefulWidget {
   final Reservation reservation;
@@ -55,18 +57,22 @@ class _ReservationDetailsManagerState extends ConsumerState<ReservationDetailsMa
           const Scaffold(
             body: Center(child: CircularProgressIndicator()),
           ),
-        data: (state) => state.currentReservation == null
-            ? const Scaffold(body: Center(child: CircularProgressIndicator()))
-            : data(state.currentReservation!, theme, now, managerNotifier, days)
+        data: (state) => data(state, theme, now, managerNotifier, days)
     );
   }
     Widget data(
-        Reservation reservation,
+        ManagerState managerState,
         ThemeData  theme,
         DateTime now,
         ManagerStateNotifier managerNotifier,
         List<String> days,
         ){
+
+      final reservation = managerState.currentReservation;
+      if (reservation == null) {
+        return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      }
+
       return Scaffold(
         appBar: AppBar(
           leading: IconButton(
@@ -93,12 +99,10 @@ class _ReservationDetailsManagerState extends ConsumerState<ReservationDetailsMa
             child: SafeArea(
               child: Padding(
                 padding: const EdgeInsets.only(top: 2.0),
-                child: Tooltip(
-                  message:
-                  'Date/heure simulée utilisée pour les tests.\nCliquez pour modifier.',
+                child: GestureDetector(
+                  onTap: () => SimulatedTimeDialog.show(context, ref),
                   child: Text(
-                    DateFormat('EEEE dd/MM/yyyy HH:mm', 'fr_FR')
-                        .format(now),
+                    DateFormat('EEEE dd/MM/yyyy HH:mm', 'fr_FR').format(now),
                     style: TextStyle(
                       fontSize: 10,
                       color: Colors.grey[400],
@@ -289,12 +293,12 @@ class _ReservationDetailsManagerState extends ConsumerState<ReservationDetailsMa
                               const Text('Aucune table assignée (en attente de confirmation)'),
                               const SizedBox(height: 24),
                               ElevatedButton.icon(
-
                                 onPressed:  () async {
-                                  /*
-                                    navique vers la page assignation table et quand la table est assigné on lance
-                                    la méthode qui permettra de confirmer la réservation
-                                  */
+                                  Navigator.pushNamed(
+                                    context,
+                                    '/assign_tables',
+                                    arguments: reservation
+                                  ).then((_) => managerNotifier.refreshReservationDetailsManager());
                                 },
                                 icon: const Icon(Icons.table_restaurant),
                                 label: const Text('Confirmer et assigner tables'),
@@ -306,14 +310,15 @@ class _ReservationDetailsManagerState extends ConsumerState<ReservationDetailsMa
                                  pour la synchronisation de la liste de reservation*/
                                   final cancelled = await CancelReservation().show(context);
                                   if (cancelled){
-                                    await managerNotifier.cancelReservationManager(reservation);
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text("Réservation annulé avec succès"),
-                                        backgroundColor: Colors.black54,
-                                        duration: Duration(seconds: 3),
-                                      ),
-                                    );
+                                    if (await managerNotifier.cancelReservationManager(reservation)) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                          content: Text("Réservation annulé avec succès"),
+                                          backgroundColor: Colors.black54,
+                                          duration: Duration(seconds: 3),
+                                        ),
+                                      );
+                                    }
                                   }
                                 },
                                 icon: const Icon(Icons.cancel),
@@ -374,14 +379,15 @@ class _ReservationDetailsManagerState extends ConsumerState<ReservationDetailsMa
                                   () async {
                                     final completed = await CompletedReservation().show(context);
                                     if (completed) {
-                                      await managerNotifier.completedReservationManager(reservation);
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(
-                                          content: Text("Réservation terminé avec succès"),
-                                          backgroundColor: Colors.black54,
-                                          duration: Duration(seconds: 3),
-                                        ),
-                                      );
+                                      if (await managerNotifier.completedReservationManager(reservation)) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(
+                                            content: Text("Réservation terminé avec succès"),
+                                            backgroundColor: Colors.black54,
+                                            duration: Duration(seconds: 3),
+                                          ),
+                                        );
+                                      }
                                     }
                                   },
                               icon: const Icon(Icons.check_circle),
@@ -399,14 +405,15 @@ class _ReservationDetailsManagerState extends ConsumerState<ReservationDetailsMa
                               onPressed: () async {
                                 final cancelled = await CancelReservation().show(context);
                                 if (cancelled){
-                                  managerNotifier.cancelReservationManager(reservation);
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text("Réservation annulé avec succès"),
-                                      backgroundColor: Colors.black54,
-                                      duration: Duration(seconds: 3),
-                                    ),
-                                  );
+                                  if (await managerNotifier.cancelReservationManager(reservation)) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text("Réservation annulé avec succès"),
+                                        backgroundColor: Colors.black54,
+                                        duration: Duration(seconds: 3),
+                                      ),
+                                    );
+                                  }
                                 }
                               },
                               icon: const Icon(Icons.cancel),

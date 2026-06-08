@@ -67,13 +67,12 @@ class ClientStateNotifier extends AbstractAsyncNotifier<ClientState> {
 
   // Réservation courante
   Future<void> getReservation(int reservationId) async{
-    /* AsyncValue.loading() consèrve l'ancien state
-       donc on est pas obliger de l'initialiser dans une variable (final currentState = state.value ?? ManagerState()) */
-
+    final currentState = state.value ?? ClientState();
     state = const AsyncValue.loading();
+
     try{
       final reservation = await Reservation.getReservation(reservationId);
-      state = AsyncData(state.value!.copyWith(
+      state = AsyncData(currentState.copyWith(
         currentReservation: reservation,
       ));
     }
@@ -155,20 +154,24 @@ class ClientStateNotifier extends AbstractAsyncNotifier<ClientState> {
      await getReservation(reservationId);
    }
 
-  Future<void> cancelReservation(Reservation reservation) async{
+  Future<bool> cancelReservation(Reservation reservation) async{
+    final currentState = state.value ?? ClientState();
     state = const AsyncValue.loading();
+
     try{
       final newReservation = await reservation.cancelReservation();
       state = AsyncData(
-        state.value!.copyWith(currentReservation: newReservation),
+        currentState.copyWith(currentReservation: newReservation),
       );
       await getReservations(state.value!.reservationStatusFilter);
+      return true;
     }
     catch(e){
       state = AsyncValue.error(
           "Something went wrong!\nPlease try again later.",
           StackTrace.current
       );
+      return false;
     }
   }
 

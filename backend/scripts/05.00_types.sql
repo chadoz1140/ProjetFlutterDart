@@ -148,3 +148,11 @@ create type reservation_details_manager as
     restaurant restaurant_info,
     restaurant_tables table_details[]
 );
+
+drop type if exists table_info_by_status cascade;
+
+create type table_info_by_status as
+    (
+        reserved table_info [],
+        not_reserved table_info []
+    );
