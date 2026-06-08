@@ -8,16 +8,12 @@ class RestaurantTables{
   final int tableNumber;
   final int capacity;
   final int restaurant;
-  final List<RestaurantTables>? reservedTables;
-  final List<RestaurantTables>? notReservedTables;
 
   const RestaurantTables({
     this.id,
     required this.tableNumber,
     required this.capacity,
     required this.restaurant,
-    this.reservedTables,
-    this.notReservedTables
   });
 
   factory RestaurantTables.fromJson(Map<String, dynamic> json) {
