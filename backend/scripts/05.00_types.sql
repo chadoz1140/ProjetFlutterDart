@@ -163,3 +163,10 @@ create type restaurant_manager_info as
     last_reservation_datetime timestamp,
     pending_requests_count    int
 );
+drop type if exists table_info_by_status cascade;
+
+create type table_info_by_status as
+    (
+        reserved table_info [],
+        not_reserved table_info []
+    );

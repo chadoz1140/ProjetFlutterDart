@@ -215,12 +215,12 @@ class Reservation{
     }
   }
 
-  Future<Reservation> cancelReservationManager() async{
+  static Future<Reservation> cancelReservationManager(Reservation reservation) async{
     try{
       final response = await ApiClient.post(
         'cancel_reservation_manager',
         body: json.encode({
-          'reservation_id' : this.id,
+          'reservation_id' : reservation.id,
         }),
       );
       if (response.statusCode == 200){
@@ -237,12 +237,12 @@ class Reservation{
     }
   }
 
-  Future<Reservation> completedReservationManager() async{
+  static Future<Reservation> completedReservationManager(Reservation reservation) async{
     try{
       final response = await ApiClient.post(
         'completed_reservation_manager',
         body: json.encode({
-          'reservation_id' : this.id,
+          'reservation_id' : reservation.id,
         }),
       );
       if (response.statusCode == 200){
@@ -259,12 +259,13 @@ class Reservation{
     }
   }
 
-  Future<Reservation> confirmedReservationManager() async{
+  static Future<Reservation> confirmedReservationManager(Reservation reservation, List<int> tableId) async{
     try{
       final response = await ApiClient.post(
         'confirmed_reservation_manager',
         body: json.encode({
-          'reservation_id' : this.id,
+          'reservation_id' : reservation.id,
+          'table_ids' : tableId
         }),
       );
       if (response.statusCode == 200){
