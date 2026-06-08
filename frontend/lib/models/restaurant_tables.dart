@@ -1,5 +1,6 @@
 import 'dart:convert';
-import 'package:prbd_2526_c01/models/restaurant.dart';
+import 'package:prbd_2526_c01/models/tables_status.dart';
+
 import '../core/services/api_client.dart';
 
 class RestaurantTables{
@@ -8,12 +9,11 @@ class RestaurantTables{
   final int capacity;
   final int restaurant;
 
-  //tout les champs ne sont pas required, pour la création d'une réservation
   const RestaurantTables({
     this.id,
     required this.tableNumber,
     required this.capacity,
-    required this.restaurant
+    required this.restaurant,
   });
 
   factory RestaurantTables.fromJson(Map<String, dynamic> json) {
@@ -86,4 +86,27 @@ class RestaurantTables{
     return RestaurantTables.fromJson(json.decode(response.body));
   }
 
+
+  static Future<TablesStatus> getTablesStatus(int reservationId) async {
+    final response = await ApiClient.post(
+      'get_table_info_status_by_reservation_id',
+      body: json.encode({'reservation_id': reservationId}),
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+
+      final reservedTables = (data['reserved'] as List)
+          .map((tableJson) => RestaurantTables.fromJson(tableJson))
+          .toList();
+
+      final notReservedTables = (data['not_reserved'] as List)
+          .map((tableJson) => RestaurantTables.fromJson(tableJson))
+          .toList();
+
+      return TablesStatus(reservedTables: reservedTables, notReservedTables: notReservedTables);
+    }
+
+    throw Exception('Failed to get table status');
+  }
 }

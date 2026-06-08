@@ -67,13 +67,12 @@ class ManagerStateNotifier extends AbstractAsyncNotifier<ManagerState> {
   }
 
   Future<void> getReservationDetailsManager(int reservationId) async {
-    /*AsyncValue.loading() consèrve l'ancien state
-     donc on est pas obliger de l'initialiser dans une variable (final currentState = state.value ?? ManagerState())*/
-
+    final currentState = state.value ?? ManagerState();
     state = const AsyncValue.loading();
+
     try {
       final reservation = await Reservation.getReservationDetailsManager(reservationId);
-      state = AsyncData(state.value!.copyWith(
+      state = AsyncData(currentState.copyWith(
         currentReservation: reservation,
       ));
     } catch (e) {
@@ -92,14 +91,76 @@ class ManagerStateNotifier extends AbstractAsyncNotifier<ManagerState> {
     await getReservationDetailsManager(reservationId);
   }
 
-  Future<void> cancelReservationManager(Reservation reservation) async{
+  Future<bool> cancelReservationManager(Reservation reservation) async{
+    final currentState = state.value ?? ManagerState();
+    state = const AsyncValue.loading();
+
+    try{
+      final newReservation = await Reservation.cancelReservationManager(reservation);
+      state = AsyncData(
+        currentState.copyWith(currentReservation: newReservation),
+      );
+      return true;
+
+    }
+    catch(e){
+      state = AsyncValue.error(
+          "Something went wrong!\nPlease try again later.",
+          StackTrace.current
+      );
+      return false;
+    }
+  }
+
+  Future<bool> completedReservationManager(Reservation reservation) async{
+    final currentState = state.value ?? ManagerState();
+    state = const AsyncValue.loading();
+
+    try{
+      final newReservation = await Reservation.completedReservationManager(reservation);
+      state = AsyncData(
+        currentState.copyWith(currentReservation: newReservation),
+      );
+      return true;
+    }
+    catch(e){
+      state = AsyncValue.error(
+          "Something went wrong!\nPlease try again later.",
+          StackTrace.current
+      );
+      return false;
+    }
+  }
+
+  Future<bool> confirmedReservationManager(Reservation reservation, List<int> tableId) async{
+    final currentState = state.value ?? ManagerState();
+    state = const AsyncValue.loading();
+
+    try{
+      final newReservation = await Reservation.confirmedReservationManager(reservation, tableId);
+      state = AsyncData(
+        currentState.copyWith(currentReservation: newReservation),
+      );
+      await refresh();
+      return true;
+    }
+    catch(e){
+      state = AsyncValue.error(
+          "Something went wrong!\nPlease try again later.",
+          StackTrace.current
+      );
+      return false;
+    }
+  }
+
+  Future<void> getTablesStatus(Reservation reservation) async{
+    final currentState = state.value ?? ManagerState();
     state = const AsyncValue.loading();
     try{
-      final newReservation = await reservation.cancelReservationManager();
+      final tablesStatus = await RestaurantTables.getTablesStatus(reservation.id!);
       state = AsyncData(
-        state.value!.copyWith(currentReservation: newReservation),
+        currentState.copyWith(restaurantTablesStatus: tablesStatus, currentReservation: reservation),
       );
-
     }
     catch(e){
       state = AsyncValue.error(
@@ -109,38 +170,12 @@ class ManagerStateNotifier extends AbstractAsyncNotifier<ManagerState> {
     }
   }
 
-  Future<void> completedReservationManager(Reservation reservation) async{
-    state = const AsyncValue.loading();
-    try{
-      final newReservation = await reservation.completedReservationManager();
-      state = AsyncData(
-        state.value!.copyWith(currentReservation: newReservation),
-      );
+  // Refresh page assign table
+  Future<void> refreshTablesStatus() async {
+    final reservation = state.value?.currentReservation;
+    if (reservation == null) return;
 
-    }
-    catch(e){
-      state = AsyncValue.error(
-          "Something went wrong!\nPlease try again later.",
-          StackTrace.current
-      );
-    }
-  }
-
-  Future<void> confirmedReservationManager(Reservation reservation) async{
-    state = const AsyncValue.loading();
-    try{
-      final newReservation = await reservation.confirmedReservationManager();
-      state = AsyncData(
-        state.value!.copyWith(currentReservation: newReservation),
-      );
-
-    }
-    catch(e){
-      state = AsyncValue.error(
-          "Something went wrong!\nPlease try again later.",
-          StackTrace.current
-      );
-    }
+    await getTablesStatus(reservation);
   }
 
   // Liste tables

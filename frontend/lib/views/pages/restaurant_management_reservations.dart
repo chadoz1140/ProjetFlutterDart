@@ -10,6 +10,7 @@ import 'package:prbd_2526_c01/views/widgets/manager_bottom_navigation.dart';
 import 'package:prbd_2526_c01/views/widgets/restaurant_management_reservations_card.dart';
 
 import '../../models/manager_state.dart';
+import '../widgets/simulated_time_dialog.dart';
 
 class RestaurantManagementReservations extends ConsumerStatefulWidget{
 
@@ -72,15 +73,16 @@ class _RestaurantManagementReservationsState extends ConsumerState<RestaurantMan
               child: Padding(
                 padding: const EdgeInsets.only(top: 2.0),
                 child: Tooltip(
-                  message:
-                  'Date/heure simulée utilisée pour les tests.\nCliquez pour modifier.',
-                  child: Text(
-                    DateFormat('EEEE dd/MM/yyyy HH:mm', 'fr_FR')
-                        .format(now),
-                    style: TextStyle(
-                      fontSize: 10,
-                      color: Colors.grey[400],
-                      fontWeight: FontWeight.normal,
+                  message: 'Date/heure simulée utilisée pour les tests.\nCliquez pour modifier.',
+                  child: GestureDetector(
+                    onTap: () => SimulatedTimeDialog.show(context, ref),
+                    child: Text(
+                      DateFormat('EEEE dd/MM/yyyy HH:mm', 'fr_FR').format(now),
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: Colors.grey[400],
+                        fontWeight: FontWeight.normal,
+                      ),
                     ),
                   ),
                 ),

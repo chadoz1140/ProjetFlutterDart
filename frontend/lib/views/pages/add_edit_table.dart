@@ -5,6 +5,7 @@ import 'package:prbd_2526_c01/models/restaurant_tables.dart';
 import 'package:prbd_2526_c01/providers/manager_state_provider.dart';
 
 import '../../providers/reference_time_provider.dart';
+import '../widgets/simulated_time_dialog.dart';
 
 
 class AddEditTable extends ConsumerStatefulWidget {
@@ -87,15 +88,16 @@ class _AddEditTableState extends ConsumerState<AddEditTable> {
             child: Padding(
               padding: const EdgeInsets.only(top: 2.0),
               child: Tooltip(
-                message:
-                'Date/heure simulée utilisée pour les tests.\nCliquez pour modifier.',
-                child: Text(
-                  DateFormat('EEEE dd/MM/yyyy HH:mm', 'fr_FR')
-                      .format(now),
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: Colors.grey[400],
-                    fontWeight: FontWeight.normal,
+                message: 'Date/heure simulée utilisée pour les tests.\nCliquez pour modifier.',
+                child: GestureDetector(
+                  onTap: () => SimulatedTimeDialog.show(context, ref),
+                  child: Text(
+                    DateFormat('EEEE dd/MM/yyyy HH:mm', 'fr_FR').format(now),
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: Colors.grey[400],
+                      fontWeight: FontWeight.normal,
+                    ),
                   ),
                 ),
               ),

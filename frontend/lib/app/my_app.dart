@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:prbd_2526_c01/views/pages/add_edit_table.dart';
+import 'package:prbd_2526_c01/views/pages/assign_tables.dart';
 import 'package:prbd_2526_c01/views/pages/home_client.dart';
 import 'package:prbd_2526_c01/views/pages/search_restaurants_page.dart';
 import 'package:prbd_2526_c01/views/pages/signup_page.dart';
@@ -44,7 +45,8 @@ class MyApp extends ConsumerWidget{
         '/add_edit_table': (context) {
           final table = ModalRoute.of(context)?.settings.arguments as RestaurantTables?;
           return AddEditTable(table: table);
-        }
+        },
+        '/assign_tables' : (context) => AssignTables()
       },
     );
   }
