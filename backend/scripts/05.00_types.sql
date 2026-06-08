@@ -110,11 +110,9 @@ create type initial_reservation_data as
 (
     restaurant  restaurant_info,
     reservation_date date,
-    selected_slot time,
     slots time[],
     restaurant_closed boolean,
-    client_has_reservation_for_all_services boolean, /*pour un seul client 1 seule reservation par service, par restau, par date*/
-    over_capacity boolean
+    client_has_reservation_for_all_services boolean /*pour un seul client 1 seule reservation par service, par restau, par date*/
 );
 
 drop type if exists reservation_edit_data cascade;
@@ -148,3 +146,27 @@ create type reservation_details_manager as
     restaurant restaurant_info,
     restaurant_tables table_details[]
 );
+
+drop type if exists restaurant_manager_info cascade;
+
+create type restaurant_manager_info as
+(
+    id                        int,
+    name                      text,
+    address                   text,
+    city                      text,
+    phone                     text,
+    description               text,
+    rating                    double precision,
+    price_range               int,
+    slot_duration             int,
+    last_reservation_datetime timestamp,
+    pending_requests_count    int
+);
+drop type if exists table_info_by_status cascade;
+
+create type table_info_by_status as
+    (
+        reserved table_info [],
+        not_reserved table_info []
+    );

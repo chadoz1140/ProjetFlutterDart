@@ -67,13 +67,12 @@ class ClientStateNotifier extends AbstractAsyncNotifier<ClientState> {
 
   // Réservation courante
   Future<void> getReservation(int reservationId) async{
-    /* AsyncValue.loading() consèrve l'ancien state
-       donc on est pas obliger de l'initialiser dans une variable (final currentState = state.value ?? ManagerState()) */
-
+    final currentState = state.value ?? ClientState();
     state = const AsyncValue.loading();
+
     try{
       final reservation = await Reservation.getReservation(reservationId);
-      state = AsyncData(state.value!.copyWith(
+      state = AsyncData(currentState.copyWith(
         currentReservation: reservation,
       ));
     }
@@ -155,159 +154,133 @@ class ClientStateNotifier extends AbstractAsyncNotifier<ClientState> {
      await getReservation(reservationId);
    }
 
-  Future<void> cancelReservation(Reservation reservation) async{
+  Future<bool> cancelReservation(Reservation reservation) async{
+    final currentState = state.value ?? ClientState();
     state = const AsyncValue.loading();
+
     try{
       final newReservation = await reservation.cancelReservation();
       state = AsyncData(
-        state.value!.copyWith(currentReservation: newReservation),
+        currentState.copyWith(currentReservation: newReservation),
       );
       await getReservations(state.value!.reservationStatusFilter);
+      return true;
     }
     catch(e){
       state = AsyncValue.error(
           "Something went wrong!\nPlease try again later.",
           StackTrace.current
       );
+      return false;
     }
   }
 
-  Future<void> loadNewReservationForm(int restaurantId) async {
-    final currentState = state.value ?? ClientState();
-    const numberOfGuests = 2;
-
-    state = const AsyncValue.loading();
-
-    try {
-      final data = await Reservation.getFirstAvailableReservationSlot(
-        restaurantId,
-        numberOfGuests,
-      );
-
-      final initialReservation = Reservation.fromInitialReservationJson(
-        data,
-        numberOfGuests,
-      );
-
-      final restaurant = Restaurant.fromJson(data['restaurant']);
-      final selectedReservationDate = DateTime.parse(data['reservation_date']);
-      final availableSlots = (data['slots'] as List<dynamic>? ?? [])
-          .map((slot) => slot.toString())
-          .toList();
-      final restaurantClosed = data['restaurant_closed'] ?? false;
-      final clientHasReservationForAllServices =
-          data['client_has_reservation_for_all_services'] ?? false;
-      final overCapacity = data['over_capacity'] ?? false;
-
-      state = AsyncValue.data(currentState.copyWith(
-        currentReservation: initialReservation,
-        clearCurrentReservation: initialReservation == null,
-        currentRestaurant: restaurant,
-        selectedReservationDate: selectedReservationDate,
-        availableSlots: availableSlots,
-        restaurantClosed: restaurantClosed,
-        clientHasReservationForAllServices: clientHasReservationForAllServices,
-        overCapacity: overCapacity,
-      ));
-    } catch(e, stackTrace) {
-      state = AsyncValue.error(
-        "Something went wrong loading restaurant details!\n Please try again later?",
-        stackTrace,);
-    }
-
-  }
-
-  Future<void> loadReservationSlots(DateTime date) async {
+  Future<void> loadReservationSlots(DateTime date, {bool firstOpening = false}) async {
     final currentState = state.value ?? ClientState();
     final restaurant = currentState.currentRestaurant;
-    final numberOfGuests = currentState.currentReservation?.numberOfGuests ?? 2;
 
     if (restaurant == null) return;
 
     state = const AsyncValue.loading();
 
     try {
-      final data = await Reservation.getReservationSlots(
+      final data = await Reservation.getNewReservationData(
         restaurant.id,
         date,
-        numberOfGuests,
       );
 
-      final initialReservation = Reservation.fromInitialReservationJson(
-        data,
-        numberOfGuests,
-      );
 
-      final selectedReservationDate = DateTime.parse(data['reservation_date']);
+      final selectedDate =
+            DateTime.parse(data['reservation_date']);
 
       final availableSlots = (data['slots'] as List<dynamic>? ?? [])
           .map((slot) => slot.toString())
           .toList();
+      final numberOfGuests = firstOpening
+          ? 2
+          : currentState.newReservationGuests;
+
+      String? slotToSelect;
+
+      if (firstOpening && availableSlots.isNotEmpty) {
+        slotToSelect = availableSlots.first;
+      } else if (availableSlots.contains(currentState.selectedReservationSlot)) {
+        slotToSelect = currentState.selectedReservationSlot;
+      }
 
       state = AsyncValue.data(currentState.copyWith(
-        currentReservation: initialReservation,
-        clearCurrentReservation: initialReservation == null,
-        selectedReservationDate: selectedReservationDate,
+        selectedReservationDate: selectedDate,
         availableSlots: availableSlots,
+        newReservationGuests: numberOfGuests,
         restaurantClosed: data['restaurant_closed'] ?? false,
         clientHasReservationForAllServices:
         data['client_has_reservation_for_all_services'] ?? false,
-        overCapacity: data['over_capacity'] ?? false,
+
+        selectedReservationSlot: slotToSelect,
+        clearSelectedReservationSlot: slotToSelect == null,
+
+        clearCurrentReservation: true,
+        overCapacity: false,
       ));
+      if (slotToSelect != null) {
+        await checkNewReservationOverCapacity(
+          numberOfGuests,
+        );
+      }
     } catch (e, stackTrace) {
       state = AsyncValue.error(e, stackTrace);
     }
   }
 
-  void selectReservationSlot(String slot) {
+  void changeNewReservationGuests(int numberOfGuests) {
     final currentState = state.value ?? ClientState();
-    final reservation = currentState.currentReservation;
-    final selectedDate = currentState.selectedReservationDate;
-
-    if (reservation == null || selectedDate == null) return;
-
-    final parts = slot.split(':');
-    final hour = int.parse(parts[0]);
-    final minute = int.parse(parts[1]);
-
-    final selectedDateTime = DateTime(
-      selectedDate.year,
-      selectedDate.month,
-      selectedDate.day,
-      hour,
-      minute,
-    );
-
-    final updatedReservation = reservation.copyWith(
-      dateTime: selectedDateTime,
-    );
 
     state = AsyncValue.data(currentState.copyWith(
-      currentReservation: updatedReservation,
+      newReservationGuests: numberOfGuests,
+      overCapacity: false,
+    ));
+  }
+
+  void selectReservationSlot(String slot) {
+    final currentState = state.value ?? ClientState();
+
+    state = AsyncValue.data(currentState.copyWith(
+      selectedReservationSlot: slot,
+      overCapacity: false,
     ));
   }
 
   Future<void> checkNewReservationOverCapacity(int numberOfGuests) async {
     final currentState = state.value ?? ClientState();
-    final reservation = currentState.currentReservation;
 
-    if (reservation == null) return;
+    final restaurant = currentState.currentRestaurant;
+    final date = currentState.selectedReservationDate;
+    final slot = currentState.selectedReservationSlot;
 
-    final reservationToCheck = reservation.copyWith(
-      numberOfGuests: numberOfGuests,
+    if (restaurant == null || date == null || slot == null) {
+      return;
+    }
+
+    final parts = slot.split(':');
+    final reservationDateTime = DateTime(
+      date.year,
+      date.month,
+      date.day,
+      int.parse(parts[0]),
+      int.parse(parts[1]),
     );
 
     try {
-      final overCapacity = await Reservation.checkReservationOverCapacity(
-        reservationToCheck.restaurant.id,
-        reservationToCheck.dateTime,
+      final overCapacity =
+      await Reservation.checkReservationOverCapacity(
+        restaurant.id,
+        reservationDateTime,
         numberOfGuests,
       );
 
       final latestState = state.value ?? currentState;
 
       state = AsyncValue.data(latestState.copyWith(
-        currentReservation: reservationToCheck,
         overCapacity: overCapacity,
       ));
     } catch (e, stackTrace) {
@@ -317,52 +290,53 @@ class ClientStateNotifier extends AbstractAsyncNotifier<ClientState> {
 
   Future<Reservation> saveNewReservation(String? specialRequests) async {
     final currentState = state.value ?? ClientState();
-    final reservation = currentState.currentReservation;
 
-    if (reservation == null) {
-      throw Exception('No reservation selected');
+    final restaurant = currentState.currentRestaurant;
+    final date = currentState.selectedReservationDate;
+    final slot = currentState.selectedReservationSlot;
+    final numberOfGuests  = currentState.newReservationGuests;
+
+    if (restaurant == null || date == null || slot == null) {
+      throw Exception('Informations de réservation manquantes');
     }
+
+    final parts = slot.split(':');
+
+    final reservationDateTime = DateTime(
+      date.year,
+      date.month,
+      date.day,
+      int.parse(parts[0]),
+      int.parse(parts[1]),
+    );
 
     state = const AsyncValue.loading();
 
     try {
       final savedReservation = await Reservation.saveReservation(
-        reservation.restaurant.id,
-        reservation.dateTime,
-        reservation.numberOfGuests,
+        restaurant.id,
+        reservationDateTime,
+        numberOfGuests ,
         specialRequests,
       );
 
-      final reservations = [
-        savedReservation,
-        ...currentState.reservations,
-      ];
-
       state = AsyncValue.data(currentState.copyWith(
         currentReservation: savedReservation,
-        reservations: reservations,
+        reservations: [
+          savedReservation,
+          ...currentState.reservations,
+        ],
       ));
       return savedReservation;
-    } catch (e, stackTrace) {
-      state = AsyncValue.error(e, stackTrace);
-      rethrow;
+    } catch (e) {
+      state = AsyncValue.error(
+          "Something went wrong!\nPlease try again later.",
+          StackTrace.current
+      );
+      throw Exception('Failed to save reservation');
     }
   }
 
-  void changeNewReservationGuests(int numberOfGuests) {
-    final currentState = state.value ?? ClientState();
-    final reservation = currentState.currentReservation;
 
-    if (reservation == null) return;
-
-    final updatedReservation = reservation.copyWith(
-      numberOfGuests: numberOfGuests,
-    );
-
-    state = AsyncValue.data(currentState.copyWith(
-      currentReservation: updatedReservation,
-      overCapacity: false,
-    ));
-  }
 
 }

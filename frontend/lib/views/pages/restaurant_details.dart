@@ -6,6 +6,8 @@ import 'package:prbd_2526_c01/models/service.dart';
 import 'package:prbd_2526_c01/providers/client_state_provider.dart';
 import 'package:prbd_2526_c01/providers/reference_time_provider.dart';
 
+import '../widgets/simulated_time_dialog.dart';
+
 class RestaurantDetails extends ConsumerStatefulWidget {
   const RestaurantDetails({super.key});
   @override
@@ -80,12 +82,15 @@ class RestaurantDetailsState extends ConsumerState<RestaurantDetails> {
                   padding: const EdgeInsets.only(top: 2.0),
                   child: Tooltip(
                     message: 'Date/heure simulée utilisée pour les tests.\nCliquez pour modifier.',
-                    child: Text(
-                      DateFormat('EEEE dd/MM/yyyy HH:mm', 'fr_FR').format(now),
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: Colors.grey[400],
-                        fontWeight: FontWeight.normal,
+                    child: GestureDetector(
+                      onTap: () => SimulatedTimeDialog.show(context, ref),
+                      child: Text(
+                        DateFormat('EEEE dd/MM/yyyy HH:mm', 'fr_FR').format(now),
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: Colors.grey[400],
+                          fontWeight: FontWeight.normal,
+                        ),
                       ),
                     ),
                   ),
@@ -215,11 +220,11 @@ class RestaurantDetailsState extends ConsumerState<RestaurantDetails> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
-                    onPressed: () async {
-                        await clientNotifier.loadNewReservationForm(restaurant.id);
+                      onPressed: () async {
+                        await clientNotifier.loadReservationSlots(now, firstOpening: true);
                         if (!mounted) return;
                         Navigator.pushReplacementNamed(context, '/new_reservation');
-                    },
+                      },
                       icon: const Icon(Icons.add),
                       label: const Text('Réserver'),
                       style: ElevatedButton.styleFrom(

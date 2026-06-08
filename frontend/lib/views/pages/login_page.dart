@@ -7,6 +7,7 @@ import 'package:prbd_2526_c01/core/widgets/dialog_box.dart';
 import 'package:prbd_2526_c01/providers/manager_state_provider.dart';
 import 'package:prbd_2526_c01/providers/reference_time_provider.dart';
 import 'package:prbd_2526_c01/providers/current_user_provider.dart';
+import 'package:prbd_2526_c01/providers/simulated_time_provider.dart';
 
 import '../../models/user.dart';
 
@@ -321,6 +322,7 @@ class _LoginPageState extends ConsumerState<LoginPage>{
     if(result != 'Réinitialiser') return;
 
     await ref.read(currentUserProvider.notifier).resetDatabase();
+    await ref.read(simulatedTimeProvider.notifier).refresh();
     if (!context.mounted) return;
     var securityState = ref.read(currentUserProvider);
 

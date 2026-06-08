@@ -5,11 +5,9 @@ import 'package:prbd_2526_c01/core/widgets/data_error_widget.dart';
 import 'package:prbd_2526_c01/providers/client_state_provider.dart';
 import 'package:prbd_2526_c01/providers/current_user_provider.dart';
 import 'package:prbd_2526_c01/providers/reference_time_provider.dart';
-import 'package:prbd_2526_c01/views/pages/reservation_details.dart';
-import 'package:prbd_2526_c01/views/pages/reservation_details_manager.dart';
-
 import '../../models/client_state.dart';
 import '../widgets/reservation_card.dart';
+import '../widgets/simulated_time_dialog.dart';
 
 class HomeClient extends ConsumerStatefulWidget{
   const HomeClient({super.key});
@@ -22,6 +20,17 @@ class HomeClient extends ConsumerStatefulWidget{
 class _HomeClientState extends ConsumerState<HomeClient> {
 
   String _selectedStatus = 'all';
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    final status = ModalRoute.of(context)?.settings.arguments as String?;
+
+    if (status != null) {
+      _selectedStatus = status;
+    }
+  }
 
   void _logout() {
     ref.read(currentUserProvider.notifier).logout();
@@ -62,8 +71,8 @@ class _HomeClientState extends ConsumerState<HomeClient> {
             icon: const Icon(Icons.refresh),
             tooltip: 'Rafraîchir les données',
             onPressed: () {
-              setState(() => _selectedStatus = 'all');
-              notifier.refresh();
+              final status = _selectedStatus == 'all' ? null : _selectedStatus;
+              notifier.getReservations(status);
             },
           ),
           IconButton(
@@ -83,12 +92,15 @@ class _HomeClientState extends ConsumerState<HomeClient> {
               padding: const EdgeInsets.only(top: 2.0),
               child: Tooltip(
                 message: 'Date/heure simulée utilisée pour les tests.\nCliquez pour modifier.',
-                child: Text(
-                  DateFormat('EEEE dd/MM/yyyy HH:mm', 'fr_BE').format(now),
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: Colors.grey[400],
-                    fontWeight: FontWeight.normal,
+                child: GestureDetector(
+                  onTap: () => SimulatedTimeDialog.show(context, ref),
+                  child: Text(
+                    DateFormat('EEEE dd/MM/yyyy HH:mm', 'fr_FR').format(now),
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: Colors.grey[400],
+                      fontWeight: FontWeight.normal,
+                    ),
                   ),
                 ),
               ),
@@ -160,8 +172,11 @@ class _HomeClientState extends ConsumerState<HomeClient> {
                             context,
                             '/reservation_details',
                             arguments: reservation.id,
-                          ).then((_) => notifier.refresh());
-                        },
+                          ).then((_) {
+                              final status = _selectedStatus == 'all' ? null : _selectedStatus;
+                              notifier.getReservations(status);
+                            });
+                         },
                       ),
                     ],
                   ),

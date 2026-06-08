@@ -74,7 +74,7 @@ BEGIN
 
     RETURN NULL;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SECURITY DEFINER ;
 
 
 CREATE TRIGGER check_reservation_service_time_trigger

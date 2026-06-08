@@ -63,13 +63,16 @@ class RestaurantManagementReservationsCard extends ConsumerWidget{
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        const SizedBox(width: 12),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
                         const Icon(Icons.people, size: 16),
                         const SizedBox(width: 4),
                         Text(
                           '${reservation.numberOfGuests} convives',
-                          style: TextStyle(fontSize: 14,
-                              color: Colors.grey[600]),
+                          style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                         ),
                       ],
                     ),
