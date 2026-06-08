@@ -7,6 +7,8 @@ import 'package:prbd_2526_c01/providers/manager_state_provider.dart';
 import 'package:prbd_2526_c01/providers/reference_time_provider.dart';
 import 'package:prbd_2526_c01/views/widgets/my_restaurant_card.dart';
 
+import '../widgets/simulated_time_dialog.dart';
+
 class HomeManager extends ConsumerWidget {
   const HomeManager({super.key});
 
@@ -84,12 +86,18 @@ class HomeManager extends ConsumerWidget {
           child: SafeArea(
             child: Padding(
               padding: const EdgeInsets.only(top: 2.0),
-              child: Text(
-                DateFormat('EEEE dd/MM/yyyy HH:mm', 'fr_BE').format(now),
-                style: TextStyle(
-                  fontSize: 10,
-                  color: Colors.grey[400],
-                  fontWeight: FontWeight.normal,
+              child: Tooltip(
+                message: 'Date/heure simulée utilisée pour les tests.\nCliquez pour modifier.',
+                child: GestureDetector(
+                  onTap: () => SimulatedTimeDialog.show(context, ref),
+                  child: Text(
+                    DateFormat('EEEE dd/MM/yyyy HH:mm', 'fr_FR').format(now),
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: Colors.grey[400],
+                      fontWeight: FontWeight.normal,
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -109,7 +117,7 @@ class HomeManager extends ConsumerWidget {
                 restaurant: restaurant,
                 onTap: () {
                   notifier.selectRestaurant(restaurant);
-                  Navigator.pushNamed(context, '/myRestantReservations')
+                  Navigator.pushNamed(context, '/myRestaurantReservations')
                       .then((_) => notifier.refreshRestaurants());
                 },
               ),

@@ -14,7 +14,7 @@ class EditReservationPage extends ConsumerStatefulWidget {
       _EditReservationPageState();
 }
 
-class _EditReservationPageState extends ConsumerState<EditReservationPage> {
+  class _EditReservationPageState extends ConsumerState<EditReservationPage> {
 
   late int _reservationId;
   late int _restaurantId;

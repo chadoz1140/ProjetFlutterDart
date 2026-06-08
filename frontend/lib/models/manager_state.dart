@@ -9,6 +9,7 @@ class ManagerState {
   final List<Reservation> reservations;
   final Restaurant? currentRestaurant;
   final List<Restaurant> restaurants;
+  final List<RestaurantTables> tables;
   final TablesStatus restaurantTablesStatus;
 
   ManagerState({
@@ -16,6 +17,7 @@ class ManagerState {
     this.reservations = const [],
     this.currentRestaurant,
     this.restaurants = const[],
+    this.tables = const[],
     this.restaurantTablesStatus = const TablesStatus(),
   });
 
@@ -24,6 +26,7 @@ class ManagerState {
     List<Reservation>? reservations,
     Restaurant? currentRestaurant,
     List<Restaurant>? restaurants,
+    List<RestaurantTables>? tables,
     TablesStatus? restaurantTablesStatus
   }) {
     return ManagerState(
@@ -31,6 +34,7 @@ class ManagerState {
       reservations: reservations ?? this.reservations,
       currentRestaurant: currentRestaurant ?? this.currentRestaurant,
       restaurants: restaurants ?? this.restaurants,
+      tables: tables ?? this.tables,
       restaurantTablesStatus: restaurantTablesStatus ?? this.restaurantTablesStatus,
     );
   }
