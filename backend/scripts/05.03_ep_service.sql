@@ -8,7 +8,7 @@ $$
                    select row(s.id, s.restaurant, s.day_of_week, s.start_time, s.end_time)::service_info
                    from services as s
                    where s.restaurant = restaurant_id
-                   order by s.day_of_week);
+                   order by s.day_of_week, s.start_time, s.end_time);
 
 $$language sql security definer;
 

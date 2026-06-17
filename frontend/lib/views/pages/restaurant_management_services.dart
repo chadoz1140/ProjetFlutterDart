@@ -48,10 +48,11 @@ class _RestaurantManagmentServicesState extends ConsumerState<RestaurantManageme
           stackTrace: stackTrace,
           notifier: managerNotifier,
         ),
-        loading: () => const Scaffold(
-          body: Center(
-            child: CircularProgressIndicator(),
-          ),
+        loading: () => data(
+          theme,
+          managerState.value ?? ManagerState(),
+          managerNotifier,
+          isLoading: true,
         ),
     );
   }
