@@ -45,6 +45,7 @@ class ClientState {
     int? newReservationGuests,
     bool clearCurrentReservation = false,
     bool clearSelectedReservationSlot = false,
+    bool clearReservationStatusFilter = false,
     String? reservationStatusFilter,
     List<Reservation>? reservations,
     Restaurant? currentRestaurant,
@@ -60,7 +61,7 @@ class ClientState {
   }) {
     return ClientState(
       currentReservation: clearCurrentReservation ? null : (currentReservation ?? this.currentReservation),
-      reservationStatusFilter: reservationStatusFilter ?? this.reservationStatusFilter,
+      reservationStatusFilter: clearReservationStatusFilter ? null : reservationStatusFilter ?? this.reservationStatusFilter,
       reservations: reservations ?? this.reservations,
       currentRestaurant: currentRestaurant ?? this.currentRestaurant,
       searchText: searchText ?? this.searchText,

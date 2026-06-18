@@ -675,8 +675,5 @@ $$ language plpgsql security definer;
 
 grant execute on function update_reservation(integer, timestamp, integer, text) to authenticated;
 
-grant select on reservation_tables to authenticated;
-grant select on reservations to authenticated;
-
 
 

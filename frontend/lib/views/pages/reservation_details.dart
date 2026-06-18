@@ -132,7 +132,7 @@ class _ReservationDetailsState extends ConsumerState<ReservationDetails> {
                           const SizedBox(width: 4),
                           Expanded(
                             child: Text(
-                              reservation.restaurant.city,
+                              '${reservation.restaurant.address}, ${reservation.restaurant.city}',
                               style: TextStyle(color: Colors.grey[600]),
                             ),
                           ),
@@ -189,18 +189,27 @@ class _ReservationDetailsState extends ConsumerState<ReservationDetails> {
                           ],
                         ),
                       ),
-                      const SizedBox(height: 16),
-                      const Divider(),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'Demandes spéciales',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        reservation.specialRequest ?? '',
-                        style: TextStyle(color: Colors.grey[700]),
-                      ),
+                      if (reservation.specialRequest != null && reservation.specialRequest!.isNotEmpty)
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            const SizedBox(height: 16),
+                            const Divider(),
+                            const SizedBox(height: 8),
+                            const Text(
+                              'Demandes spéciales',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              reservation.specialRequest ?? '',
+                              style: TextStyle(color: Colors.grey[700]),
+                            ),
+                          ],
+                        ),
                     ],
                   ),
                 ),

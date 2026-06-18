@@ -44,15 +44,13 @@ class ClientStateNotifier extends AbstractAsyncNotifier<ClientState> {
   // Réservations
   Future<void> getReservations(String? status) async {
     final currentState = state.value ?? ClientState();
-    state = const AsyncValue.loading();
     try {
       final reservations = await Reservation.getReservations(status: status);
-      print('RESERVATIONS: $reservations');
       state = AsyncValue.data(currentState.copyWith(
         reservations: reservations,
         reservationStatusFilter: status,
-      )
-      );
+        clearReservationStatusFilter: status == null,
+      ));
     }catch(e, stackTrace) {
       state = AsyncValue.error(
           "Something went wrong loading reservations!\n Please try again later?",
@@ -68,8 +66,6 @@ class ClientStateNotifier extends AbstractAsyncNotifier<ClientState> {
   // Réservation courante
   Future<void> getReservation(int reservationId) async{
     final currentState = state.value ?? ClientState();
-    state = const AsyncValue.loading();
-
     try{
       final reservation = await Reservation.getReservation(reservationId);
       state = AsyncData(currentState.copyWith(
@@ -154,16 +150,31 @@ class ClientStateNotifier extends AbstractAsyncNotifier<ClientState> {
      await getReservation(reservationId);
    }
 
+  List<Reservation> updateReservationInList(ClientState currentState, Reservation newReservation){
+    final updatedReservations = <Reservation>[];
+    final filter = currentState.reservationStatusFilter;
+
+    for (final reservation in currentState.reservations) {
+
+      final reservationToShow = reservation.id == newReservation.id ? newReservation : reservation;
+
+      if (filter == null || reservationToShow.status.name == filter) {
+        updatedReservations.add(reservationToShow);
+      }
+    }
+    return updatedReservations;
+  }
+
   Future<bool> cancelReservation(Reservation reservation) async{
     final currentState = state.value ?? ClientState();
-    state = const AsyncValue.loading();
-
     try{
-      final newReservation = await reservation.cancelReservation();
-      state = AsyncData(
-        currentState.copyWith(currentReservation: newReservation),
-      );
-      await getReservations(state.value!.reservationStatusFilter);
+      final newReservation = await Reservation.cancelReservation(reservation);
+      final updatedReservations = updateReservationInList(currentState, newReservation);
+
+      state = AsyncData(currentState.copyWith(
+        currentReservation: newReservation,
+        reservations: updatedReservations,
+      ));
       return true;
     }
     catch(e){

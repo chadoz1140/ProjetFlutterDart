@@ -46,11 +46,12 @@ class ManagerStateNotifier extends AbstractAsyncNotifier<ManagerState> {
   // Reservations by restaurant
   Future<void> getReservationsByRestaurant(int restaurantId, String? status) async {
     final currentState = state.value ?? ManagerState();
-    state = const AsyncValue.loading();
     try {
       final reservations = await Reservation.getReservationsByRestaurant(restaurantId, status: status);
       state = AsyncValue.data(currentState.copyWith(
-        reservations : reservations,
+        reservations: reservations,
+        reservationStatusFilter: status,
+        clearReservationStatusFilter: status == null,
       ));
     }catch(e, stackTrace) {
       state = AsyncValue.error(
@@ -64,13 +65,11 @@ class ManagerStateNotifier extends AbstractAsyncNotifier<ManagerState> {
   Future<void> refresh() async {
     final restaurantId = state.value?.currentRestaurant?.id;
     if(restaurantId == null) return;
-    return getReservationsByRestaurant(restaurantId, null);
+    return getReservationsByRestaurant(restaurantId, state.value?.reservationStatusFilter);
   }
 
   Future<void> getReservationDetailsManager(int reservationId) async {
     final currentState = state.value ?? ManagerState();
-    state = const AsyncValue.loading();
-
     try {
       final reservation = await Reservation.getReservationDetailsManager(reservationId);
       state = AsyncData(currentState.copyWith(
@@ -92,17 +91,33 @@ class ManagerStateNotifier extends AbstractAsyncNotifier<ManagerState> {
     await getReservationDetailsManager(reservationId);
   }
 
+  List<Reservation> updateReservationInList(ManagerState currentState, Reservation newReservation){
+    final updatedReservations = <Reservation>[];
+    final filter = currentState.reservationStatusFilter;
+
+    for (final reservation in currentState.reservations) {
+
+      final reservationToShow = reservation.id == newReservation.id ? newReservation : reservation;
+
+      if (filter == null || reservationToShow.status.name == filter) {
+        updatedReservations.add(reservationToShow);
+      }
+    }
+    return updatedReservations;
+  }
+
   Future<bool> cancelReservationManager(Reservation reservation) async{
     final currentState = state.value ?? ManagerState();
-    state = const AsyncValue.loading();
-
     try{
       final newReservation = await Reservation.cancelReservationManager(reservation);
+      final updatedReservations = updateReservationInList(currentState, newReservation);
       state = AsyncData(
-        currentState.copyWith(currentReservation: newReservation),
+        currentState.copyWith(
+          currentReservation: newReservation,
+          reservations: updatedReservations,
+        ),
       );
       return true;
-
     }
     catch(e){
       state = AsyncValue.error(
@@ -115,12 +130,15 @@ class ManagerStateNotifier extends AbstractAsyncNotifier<ManagerState> {
 
   Future<bool> completedReservationManager(Reservation reservation) async{
     final currentState = state.value ?? ManagerState();
-    state = const AsyncValue.loading();
-
     try{
       final newReservation = await Reservation.completedReservationManager(reservation);
+      final updatedReservations = updateReservationInList(currentState, newReservation);
+
       state = AsyncData(
-        currentState.copyWith(currentReservation: newReservation),
+        currentState.copyWith(
+          currentReservation: newReservation,
+          reservations: updatedReservations,
+        ),
       );
       return true;
     }
@@ -135,14 +153,16 @@ class ManagerStateNotifier extends AbstractAsyncNotifier<ManagerState> {
 
   Future<bool> confirmedReservationManager(Reservation reservation, List<int> tableId) async{
     final currentState = state.value ?? ManagerState();
-    state = const AsyncValue.loading();
-
     try{
       final newReservation = await Reservation.confirmedReservationManager(reservation, tableId);
+      final updatedReservations = updateReservationInList(currentState, newReservation);
+
       state = AsyncData(
-        currentState.copyWith(currentReservation: newReservation),
+        currentState.copyWith(
+          currentReservation: newReservation,
+          reservations: updatedReservations,
+        ),
       );
-      await refresh();
       return true;
     }
     catch(e){

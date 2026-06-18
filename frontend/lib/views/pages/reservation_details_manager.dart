@@ -298,7 +298,7 @@ class _ReservationDetailsManagerState extends ConsumerState<ReservationDetailsMa
                                     context,
                                     '/assign_tables',
                                     arguments: reservation
-                                  ).then((_) => managerNotifier.refreshReservationDetailsManager());
+                                  );
                                 },
                                 icon: const Icon(Icons.table_restaurant),
                                 label: const Text('Confirmer et assigner tables'),
