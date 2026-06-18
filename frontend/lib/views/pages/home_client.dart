@@ -172,10 +172,7 @@ class _HomeClientState extends ConsumerState<HomeClient> {
                             context,
                             '/reservation_details',
                             arguments: reservation.id,
-                          ).then((_) {
-                              final status = _selectedStatus == 'all' ? null : _selectedStatus;
-                              notifier.getReservations(status);
-                            });
+                          );
                          },
                       ),
                     ],

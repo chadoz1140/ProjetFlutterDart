@@ -157,7 +157,7 @@ class _RestaurantManagementReservationsState extends ConsumerState<RestaurantMan
                                         reservation: reservation
                                     ),
                                   ),
-                                ).then((_) => notifier.refresh());
+                                );
                               },
                           )
                     ],

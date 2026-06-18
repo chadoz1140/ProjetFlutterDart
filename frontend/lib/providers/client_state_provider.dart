@@ -49,6 +49,7 @@ class ClientStateNotifier extends AbstractAsyncNotifier<ClientState> {
       state = AsyncValue.data(currentState.copyWith(
         reservations: reservations,
         reservationStatusFilter: status,
+        clearReservationStatusFilter: status == null,
       ));
     }catch(e, stackTrace) {
       state = AsyncValue.error(
@@ -149,13 +150,27 @@ class ClientStateNotifier extends AbstractAsyncNotifier<ClientState> {
      await getReservation(reservationId);
    }
 
+  List<Reservation> updateReservationInList(ClientState currentState, Reservation newReservation){
+    final updatedReservations = <Reservation>[];
+    final filter = currentState.reservationStatusFilter;
+
+    for (final reservation in currentState.reservations) {
+
+      final reservationToShow = reservation.id == newReservation.id ? newReservation : reservation;
+
+      if (filter == null || reservationToShow.status.name == filter) {
+        updatedReservations.add(reservationToShow);
+      }
+    }
+    return updatedReservations;
+  }
+
   Future<bool> cancelReservation(Reservation reservation) async{
     final currentState = state.value ?? ClientState();
     try{
       final newReservation = await reservation.cancelReservation();
-      final updatedReservations = currentState.reservations
-          .map((r) => r.id == newReservation.id ? newReservation : r)
-          .toList();
+      final updatedReservations = updateReservationInList(currentState, newReservation);
+
       state = AsyncData(currentState.copyWith(
         currentReservation: newReservation,
         reservations: updatedReservations,
