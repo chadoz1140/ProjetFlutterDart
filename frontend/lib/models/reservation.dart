@@ -171,12 +171,12 @@ class Reservation{
     }
   }
 
-  Future<Reservation> cancelReservation() async{
+  static Future<Reservation> cancelReservation(Reservation reservation) async{
     try{
       final response = await ApiClient.post(
         'cancel_reservation',
         body: json.encode({
-          'reservation_id' : this.id,
+          'reservation_id' : reservation.id,
         }),
       );
       if (response.statusCode == 200){

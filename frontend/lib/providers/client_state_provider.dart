@@ -168,7 +168,7 @@ class ClientStateNotifier extends AbstractAsyncNotifier<ClientState> {
   Future<bool> cancelReservation(Reservation reservation) async{
     final currentState = state.value ?? ClientState();
     try{
-      final newReservation = await reservation.cancelReservation();
+      final newReservation = await Reservation.cancelReservation(reservation);
       final updatedReservations = updateReservationInList(currentState, newReservation);
 
       state = AsyncData(currentState.copyWith(
