@@ -8,6 +8,7 @@ import 'package:prbd_2526_c01/models/tables_status.dart';
 class ManagerState {
   final Reservation? currentReservation;
   final List<Reservation> reservations;
+  final String? reservationStatusFilter;
   final Restaurant? currentRestaurant;
   final List<Restaurant> restaurants;
   final List<Service>services;
@@ -18,6 +19,7 @@ class ManagerState {
   ManagerState({
     this.currentReservation,
     this.reservations = const [],
+    this.reservationStatusFilter,
     this.currentRestaurant,
     this.restaurants = const[],
     this.tables = const[],
@@ -29,6 +31,8 @@ class ManagerState {
   ManagerState copyWith({
     Reservation? currentReservation,
     List<Reservation>? reservations,
+    String? reservationStatusFilter,
+    bool clearReservationStatusFilter = false,
     Restaurant? currentRestaurant,
     List<Restaurant>? restaurants,
     List<Service>? services,
@@ -39,6 +43,7 @@ class ManagerState {
     return ManagerState(
       currentReservation: currentReservation ?? this.currentReservation,
       reservations: reservations ?? this.reservations,
+      reservationStatusFilter: clearReservationStatusFilter ? null : (reservationStatusFilter ?? this.reservationStatusFilter),
       currentRestaurant: currentRestaurant ?? this.currentRestaurant,
       restaurants: restaurants ?? this.restaurants,
       services: services ?? this.services,

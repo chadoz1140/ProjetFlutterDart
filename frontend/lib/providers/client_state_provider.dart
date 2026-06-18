@@ -44,15 +44,12 @@ class ClientStateNotifier extends AbstractAsyncNotifier<ClientState> {
   // Réservations
   Future<void> getReservations(String? status) async {
     final currentState = state.value ?? ClientState();
-    state = const AsyncValue.loading();
     try {
       final reservations = await Reservation.getReservations(status: status);
-      print('RESERVATIONS: $reservations');
       state = AsyncValue.data(currentState.copyWith(
         reservations: reservations,
         reservationStatusFilter: status,
-      )
-      );
+      ));
     }catch(e, stackTrace) {
       state = AsyncValue.error(
           "Something went wrong loading reservations!\n Please try again later?",
@@ -68,8 +65,6 @@ class ClientStateNotifier extends AbstractAsyncNotifier<ClientState> {
   // Réservation courante
   Future<void> getReservation(int reservationId) async{
     final currentState = state.value ?? ClientState();
-    state = const AsyncValue.loading();
-
     try{
       final reservation = await Reservation.getReservation(reservationId);
       state = AsyncData(currentState.copyWith(
@@ -156,14 +151,15 @@ class ClientStateNotifier extends AbstractAsyncNotifier<ClientState> {
 
   Future<bool> cancelReservation(Reservation reservation) async{
     final currentState = state.value ?? ClientState();
-    state = const AsyncValue.loading();
-
     try{
       final newReservation = await reservation.cancelReservation();
-      state = AsyncData(
-        currentState.copyWith(currentReservation: newReservation),
-      );
-      await getReservations(state.value!.reservationStatusFilter);
+      final updatedReservations = currentState.reservations
+          .map((r) => r.id == newReservation.id ? newReservation : r)
+          .toList();
+      state = AsyncData(currentState.copyWith(
+        currentReservation: newReservation,
+        reservations: updatedReservations,
+      ));
       return true;
     }
     catch(e){
