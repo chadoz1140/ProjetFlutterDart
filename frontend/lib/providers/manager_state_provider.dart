@@ -331,12 +331,40 @@ class ManagerStateNotifier extends AbstractAsyncNotifier<ManagerState> {
       String startTime,
       String endTime,
       ) async {
-    await Service.saveService(
+
+    final currentState = state.value ?? ManagerState();
+    final savedService = await Service.saveService(
       serviceId,
       restaurantId,
       dayOfWeek,
       startTime,
       endTime,
+    );
+
+    final services = serviceId == null
+        ? [
+            savedService,
+            ...currentState.services,
+          ]
+        : currentState.services.map((service) {
+          if (service.id == savedService.id) {
+            return savedService;
+          }
+          return service;
+        }).toList();
+
+    services.sort((a, b) {
+      final byDay = a.dayOfWeek.compareTo(b.dayOfWeek);
+      if (byDay != 0) return byDay;
+
+      final byStart = a.startTime.compareTo(b.startTime);
+      if (byStart != 0) return byStart;
+
+      return a.endTime.compareTo(b.endTime);
+    });
+
+    state = AsyncValue.data(
+      currentState.copyWith(services: services),
     );
   }
 
