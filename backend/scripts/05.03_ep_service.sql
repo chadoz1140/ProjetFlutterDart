@@ -116,8 +116,18 @@ begin
                  and s.day_of_week = p_day_of_week
                  and (p_id_service is null or s.id <> p_id_service)
                  and new_start_time < s.end_time
-                 and new_end_time > s.start_time) then
-        raise exception 'Ce service cheavauche avec un service existant %', p_day_of_week;
+                 and new_end_time > s.start_time
+    ) then
+        raise exception 'Ce service chevauche avec un service existant le %',
+            case p_day_of_week
+                when 1 then 'Lundi'
+                when 2 then 'Mardi'
+                when 3 then 'Mercredi'
+                when 4 then 'Jeudi'
+                when 5 then 'Vendredi'
+                when 6 then 'Samedi'
+                when 7 then 'Dimanche'
+                end;
     end if;
 end;
 $$ language plpgsql security definer;

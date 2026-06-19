@@ -149,7 +149,7 @@ class _RestaurantManagmentServicesState extends ConsumerState<RestaurantManageme
                             MaterialPageRoute(
                               builder: (context) => AddEditService(service: service),
                             ),
-                          ).then((_) => notifier.getServices(restaurant.id));
+                          );
                         },
                       ),
                   ],
@@ -161,8 +161,7 @@ class _RestaurantManagmentServicesState extends ConsumerState<RestaurantManageme
                 child: FloatingActionButton(
                   heroTag: 'services_fab',
                   onPressed: () {
-                    Navigator.pushNamed(context, '/add_edit_service')
-                        .then((_) => notifier.getServices(restaurant.id));
+                    Navigator.pushNamed(context, '/add_edit_service');
                   },
                   child: const Icon(Icons.add),
                 ),

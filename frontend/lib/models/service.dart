@@ -20,6 +20,22 @@ class Service {
     required this.endTime,
   });
 
+  Service copyWith({
+    int? id,
+    int? restaurant,
+    int? dayOfWeek,
+    String? startTime,
+    String? endTime,
+  }) {
+    return Service(
+      id: id ?? this.id,
+      restaurant: restaurant ?? this.restaurant,
+      dayOfWeek: dayOfWeek ?? this.dayOfWeek,
+      startTime: startTime ?? this.startTime,
+      endTime: endTime ?? this.endTime,
+    );
+  }
+
   @override
   String toString() {
     return '$id $restaurant $dayOfWeek $startTime $endTime';
