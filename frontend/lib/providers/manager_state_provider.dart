@@ -1,5 +1,3 @@
-
-
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,8 +5,9 @@ import 'package:prbd_2526_c01/core/tools/abstract_async_notifier.dart';
 import 'package:prbd_2526_c01/models/manager_state.dart';
 import 'package:prbd_2526_c01/models/reservation.dart';
 import 'package:prbd_2526_c01/models/restaurant.dart';
-import 'package:prbd_2526_c01/models/service.dart';
 import 'package:prbd_2526_c01/models/restaurant_tables.dart';
+import 'package:prbd_2526_c01/models/service.dart';
+import 'package:prbd_2526_c01/models/status.dart';
 import 'package:prbd_2526_c01/providers/current_user_provider.dart';
 
 final managerStateProvider = AsyncNotifierProvider<ManagerStateNotifier, ManagerState>(
@@ -106,15 +105,70 @@ class ManagerStateNotifier extends AbstractAsyncNotifier<ManagerState> {
     return updatedReservations;
   }
 
+  // on calcule si la reservation compte encore comme demande en attente ou pas
+  int pendingCount(Reservation oldReservation, Reservation newReservation){
+    final oldPending = oldReservation.status == Status.pending ? 1 : 0;
+    final newPending = newReservation.status == Status.pending ? 1 : 0;
+
+    // exemple : pending -> confirmed = 0 - 1 = -1 donc on enlève 1 demande en attente au restaurant
+    return newPending - oldPending;
+  }
+
+  List<Restaurant> updateRestaurantsPendingCount(ManagerState currentState, Reservation oldReservation, Reservation newReservation){
+    final count = pendingCount(oldReservation, newReservation);
+
+    // si count vaut 0 le compteur ne doit pas changer
+    if (count == 0) {
+      return currentState.restaurants;
+    }
+
+    return currentState.restaurants.map((restaurant) {
+      // on parcours chaque resto de la liste et si ce n'est pas le restaurant de la reservation on ne touche pas
+      if (restaurant.id != newReservation.restaurant.id) return restaurant;
+
+      final newPendingCount = (restaurant.pendingCount ?? 0) + count;
+
+      // on recrée le même restaurant mais avec le compteur corrigé
+      return restaurant.copyWith(
+        pendingCount: newPendingCount < 0 ? 0 : newPendingCount,
+      );
+    }).toList();
+  }
+
+  Restaurant? updateCurrentRestaurantPendingCount(ManagerState currentState, Reservation oldReservation, Reservation newReservation){
+    final currentRestaurant = currentState.currentRestaurant;
+    final count = pendingCount(oldReservation, newReservation);
+
+    if (currentRestaurant == null) {
+      return null;
+    }
+
+    // si ce n'est pas le restaurant courant ou si rien ne change on garde pareil
+    if (currentRestaurant.id != newReservation.restaurant.id || count == 0) {
+      return currentRestaurant;
+    }
+
+    final newPendingCount = (currentRestaurant.pendingCount ?? 0) + count;
+
+    return currentRestaurant.copyWith(
+      pendingCount: newPendingCount < 0 ? 0 : newPendingCount,
+    );
+  }
+
   Future<bool> cancelReservationManager(Reservation reservation) async{
     final currentState = state.value ?? ManagerState();
     try{
       final newReservation = await Reservation.cancelReservationManager(reservation);
       final updatedReservations = updateReservationInList(currentState, newReservation);
+      final updatedRestaurants = updateRestaurantsPendingCount(currentState, reservation, newReservation);
+      final updatedCurrentRestaurant = updateCurrentRestaurantPendingCount(currentState, reservation, newReservation);
+
       state = AsyncData(
         currentState.copyWith(
           currentReservation: newReservation,
           reservations: updatedReservations,
+          currentRestaurant: updatedCurrentRestaurant,
+          restaurants: updatedRestaurants,
         ),
       );
       return true;
@@ -156,11 +210,15 @@ class ManagerStateNotifier extends AbstractAsyncNotifier<ManagerState> {
     try{
       final newReservation = await Reservation.confirmedReservationManager(reservation, tableId);
       final updatedReservations = updateReservationInList(currentState, newReservation);
+      final updatedRestaurants = updateRestaurantsPendingCount(currentState, reservation,newReservation);
+      final updatedCurrentRestaurant = updateCurrentRestaurantPendingCount(currentState, reservation, newReservation);
 
       state = AsyncData(
         currentState.copyWith(
           currentReservation: newReservation,
           reservations: updatedReservations,
+          currentRestaurant: updatedCurrentRestaurant,
+          restaurants: updatedRestaurants,
         ),
       );
       return true;

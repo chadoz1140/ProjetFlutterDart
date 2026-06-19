@@ -114,10 +114,11 @@ class ClientStateNotifier extends AbstractAsyncNotifier<ClientState> {
 
   // Restaurant details
   Future<void> getRestaurantDetails(int restaurantId) async {
-    state = const AsyncValue.loading();
+    final currentState = state.value ?? ClientState();
+    state = AsyncValue.loading();
     try {
       final restaurantDetails = await Restaurant.getRestaurantDetails(restaurantId);
-      state = AsyncValue.data(state.value!.copyWith(
+      state = AsyncValue.data(currentState.copyWith(
         currentRestaurant: restaurantDetails,
       ));
     }catch(e, stackTrace) {
@@ -134,20 +135,28 @@ class ClientStateNotifier extends AbstractAsyncNotifier<ClientState> {
     await getRestaurantDetails(restaurantId);
   }
 
-   // Modifie une réservation et recharge ses détails
+   // Modifie une réservation et met à jour le détail et la liste locale
    Future<void> updateReservation({
      required int reservationId,
      required DateTime newDateTime,
      required int numberOfGuests,
      String? specialRequests,
    }) async {
+
+     final currentState = state.value ?? ClientState();
      await Reservation.updateReservation(
        reservationId: reservationId,
        newDateTime: newDateTime,
        numberOfGuests: numberOfGuests,
        specialRequests: specialRequests,
      );
-     await getReservation(reservationId);
+
+     final newReservation = await Reservation.getReservation(reservationId);
+     final updatedReservations = updateReservationInList(currentState, newReservation);
+     state = AsyncData(currentState.copyWith(
+       currentReservation: newReservation,
+       reservations: updatedReservations,
+     ));
    }
 
   List<Reservation> updateReservationInList(ClientState currentState, Reservation newReservation){

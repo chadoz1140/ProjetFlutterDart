@@ -38,6 +38,35 @@ class Restaurant {
     return '$id $name $city, $rating, $lastReservationDatetime, $pendingCount, $services';
   }
 
+  Restaurant copyWith({
+    int? id,
+    String? name,
+    String? address,
+    String? city,
+    String? phone,
+    String? description,
+    double? rating,
+    int? priceRange,
+    DateTime? lastReservationDatetime,
+    int? pendingCount,
+    List<Service>? services,
+    int? slotDuration,
+  }) {
+    return Restaurant(
+      id: id?? this.id,
+      name: name?? this.name,
+      address: address?? this.address,
+      city: city?? this.city,
+      phone: phone?? this.phone,
+      description: description?? this.description,
+      rating: rating?? this.rating,
+      priceRange: priceRange?? this.priceRange,
+      lastReservationDatetime: lastReservationDatetime?? this.lastReservationDatetime,
+      pendingCount: pendingCount?? this.pendingCount,
+      services: services?? this.services,
+      slotDuration: slotDuration?? this.slotDuration,
+    );
+  }
 
   factory Restaurant.fromJson(Map<String, dynamic> json) {
     return Restaurant(
